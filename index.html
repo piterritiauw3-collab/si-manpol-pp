@@ -206,6 +206,7 @@ button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
 .doc-current{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;margin-bottom:10px;background:var(--info-bg);border-radius:8px;font-size:12.5px}
 .doc-current span{flex:1;min-width:140px;word-break:break-all}
 .doc-remove{display:flex;align-items:center;gap:6px;color:var(--danger);font-weight:600;font-size:12px}
+.head-actions{display:flex;gap:10px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -349,12 +350,12 @@ button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
 </section>
 
 <section id="spt" class="page">
-  <div class="page-head"><div><h1>Surat Perintah Tugas</h1><p>Pembuatan, preview, pencetakan dan pengarsipan SPT.</p></div><button class="btn primary" onclick="openModal('sptModal')"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Buat SPT</button></div>
+  <div class="page-head"><div><h1>Surat Perintah Tugas</h1><p>Pembuatan, preview, pencetakan dan pengarsipan SPT.</p></div><div class="head-actions"><button class="btn" onclick="openUploadDoc('spt')"><svg class="i" aria-hidden="true"><use href="#i-upload"/></svg>Upload SPT</button><button class="btn primary" onclick="openModal('sptModal')"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Buat SPT</button></div></div>
   <div class="card"><table class="table"><thead><tr><th>Nomor SPT</th><th>Kegiatan</th><th>Tanggal</th><th>Lokasi</th><th>Penanggung Jawab</th><th>Status</th><th>Dokumen</th><th>Aksi</th></tr></thead><tbody id="sptTable"></tbody></table></div>
 </section>
 
 <section id="laporan" class="page">
-  <div class="page-head"><div><h1>Laporan Kegiatan</h1><p>Alur petugas → operator → pimpinan → arsip final.</p></div><button class="btn primary" onclick="openModal('reportModal')"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Buat Laporan</button></div>
+  <div class="page-head"><div><h1>Laporan Kegiatan</h1><p>Alur petugas → operator → pimpinan → arsip final.</p></div><div class="head-actions"><button class="btn" onclick="openUploadDoc('report')"><svg class="i" aria-hidden="true"><use href="#i-upload"/></svg>Upload Laporan</button><button class="btn primary" onclick="openModal('reportModal')"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Buat Laporan</button></div></div>
   <div class="card"><table class="table"><thead><tr><th>No. Laporan</th><th>Kegiatan</th><th>Tanggal</th><th>Petugas</th><th>Status</th><th>Dokumen</th><th>Aksi</th></tr></thead><tbody id="reportTable"></tbody></table></div>
 </section>
 
@@ -825,6 +826,51 @@ restoreSession();
     if(error){toast('Gagal upload dokumen: '+error.message,'danger');return null;}
     return {file_path:path,file_name:file.name};
   }
+
+  /* ===== Upload cepat (tanpa mengisi form lengkap) ===== */
+  window.openUploadDoc=function(type){
+    if(DOC_TYPES.indexOf(type)<0)return;
+    const label=type==='spt'?'SPT':'Laporan Kegiatan';
+    const statuses=type==='spt'?['Aktif','Arsip','Draft']:['Disetujui','Menunggu persetujuan','Draft'];
+    let m=document.getElementById('uploadDocModal');
+    if(!m){m=document.createElement('div');m.id='uploadDocModal';m.className='modal';document.body.appendChild(m);m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show')});}
+    const today=new Date(),pad=n=>String(n).padStart(2,'0'),td=today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());
+    const acts=(typeof activities!=='undefined'?activities:[]).map(a=>`<option value="${esc(a.name)}">`).join('');
+    m.innerHTML=`<div class="modal-box" style="width:min(560px,100%)"><div class="modal-head"><h2>Upload ${label}</h2><button class="close" type="button" onclick="closeModal('uploadDocModal')">×</button></div>
+      <form id="uploadDocForm">
+        <label class="upload" for="ud_file"><svg class="i"><use href="#i-upload"/></svg><b id="ud_file_name">Pilih file ${label} yang sudah jadi</b><small>PDF, Word, Excel, JPG atau PNG &middot; maksimal 10 MB</small></label>
+        <input type="file" id="ud_file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" hidden required>
+        <p class="muted" style="margin:10px 0 0;font-size:12px">Cukup pilih file. Kolom di bawah opsional dan bisa dilengkapi nanti lewat tombol Edit.</p>
+        <div class="form-grid" style="margin-top:14px">
+          <div class="field"><label>Nomor ${type==='spt'?'SPT':'Laporan'}</label><input id="ud_no" placeholder="Otomatis dari nama file"></div>
+          <div class="field"><label>Tanggal</label><input id="ud_date" type="date" value="${td}"></div>
+          <div class="field"><label>Kegiatan</label><input id="ud_act" list="ud_acts" placeholder="Opsional"><datalist id="ud_acts">${acts}</datalist></div>
+          <div class="field"><label>Status</label><select id="ud_status">${statuses.map(x=>`<option>${x}</option>`).join('')}</select></div>
+        </div>
+        <div class="form-actions"><button type="button" class="btn" onclick="closeModal('uploadDocModal')">Batal</button><button type="submit" class="btn primary" id="ud_submit">Upload</button></div>
+      </form></div>`;
+    const fi=document.getElementById('ud_file');
+    fi.onchange=()=>{const f=fi.files[0];document.getElementById('ud_file_name').textContent=f?f.name:'Pilih file '+label+' yang sudah jadi';};
+    document.getElementById('uploadDocForm').onsubmit=async e=>{
+      e.preventDefault();
+      const f=fi.files[0];if(!f){toast('Pilih file terlebih dahulu.','danger');return;}
+      const btn=document.getElementById('ud_submit');btn.disabled=true;btn.textContent='Mengunggah...';
+      const up=await uploadDoc(type,f);
+      if(!up){btn.disabled=false;btn.textContent='Upload';return;}
+      const base=f.name.replace(/\.[^.]+$/,'');
+      const obj={};schemas[type].fields.forEach(x=>obj[x[0]]='');
+      obj.no=document.getElementById('ud_no').value.trim()||base;
+      obj.activity=document.getElementById('ud_act').value.trim()||'-';
+      obj.date=document.getElementById('ud_date').value||td;
+      obj.status=document.getElementById('ud_status').value;
+      Object.assign(obj,up);
+      const t=TYPES[type];
+      const {data,error}=await sbClient.from(t.table).insert(obj).select().single();
+      if(error){sbClient.storage.from(DOC_BUCKET).remove([up.file_path]);btn.disabled=false;btn.textContent='Upload';toast('Gagal menyimpan: '+error.message,'danger');return;}
+      db[t.key].unshift(data);renderAllCrud();closeModal('uploadDocModal');toast('Dokumen '+label+' berhasil diunggah.');
+    };
+    openModal('uploadDocModal');
+  };
   function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
   function date(v){if(!v)return '-';const d=new Date(v+'T00:00:00');return isNaN(d)?esc(v):d.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});}
   function badge(v){const x=String(v||'').toLowerCase();let c='neutral';if(/selesai|aktif|tersedia|disetujui|arsip/.test(x))c='success';else if(/proses|tunggu|draft|rencana|dipakai|menunggu/.test(x))c='warning';else if(/terlambat|batal/.test(x))c='danger-bg';else if(/berlangsung/.test(x))c='info';return `<span class="badge ${c}">${esc(v||'-')}</span>`;}
