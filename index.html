@@ -189,6 +189,15 @@ button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
   .page-head{align-items:flex-start;flex-direction:column}.welcome{flex-direction:column;align-items:flex-start;padding:20px}.profile>div:first-child{display:none}.kpi strong{font-size:24px}.kpi .icon{display:none}
 }
 @media(max-width:520px){.login-hero{min-height:340px}.login-brand{gap:14px}.login-brand h1{font-size:28px}.login-brand p{font-size:10.5px;letter-spacing:.8px}.login-hero-content{padding:24px 16px}.login-panel{padding:14px}.login-box{padding:24px 18px}.login-footer{font-size:11.5px}}
+/* form sections */
+.form-section{padding:0 0 18px;margin-bottom:18px;border-bottom:1px solid var(--border)}
+.form-section:last-of-type{border-bottom:0;margin-bottom:0;padding-bottom:0}
+.form-section h4{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:13px;font-weight:800;color:var(--navy-800)}
+.form-section h4 span{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--navy-800);color:var(--gold);font-size:11px}
+.form-grid.g3{grid-template-columns:repeat(3,1fr)}
+.field em{color:var(--danger);font-style:normal}
+.hint{color:var(--warning);font-size:11.5px}.hint:empty{display:none}
+@media(max-width:760px){.form-grid.g3{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -415,18 +424,31 @@ button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
 </div></main></div>
 
 <!-- MODALS -->
-<div id="activityModal" class="modal"><div class="modal-box"><div class="modal-head"><h2>Buat Kegiatan</h2><button class="close" onclick="closeModal('activityModal')">×</button></div>
-<form onsubmit="saveActivity(event)"><div class="form-grid">
-<div class="field"><label>Nomor Kegiatan</label><input required placeholder="KEG-2026-011"></div>
-<div class="field"><label>Nama Kegiatan</label><input required placeholder="Nama kegiatan"></div>
-<div class="field"><label>Jenis Kegiatan</label><select><option>Patroli</option><option>Penertiban</option><option>Pengawasan</option><option>Pengamanan</option><option>Monitoring</option><option>Sosialisasi</option><option>Pembinaan</option><option>Penegakan Perda</option><option>Penegakan Perkada</option><option>Pengawasan ketertiban umum</option><option>Kegiatan lainnya</option></select></div>
-<div class="field"><label>Tanggal</label><input type="date" required></div><div class="field"><label>Jam Mulai</label><input type="time"></div><div class="field"><label>Jam Selesai</label><input type="time"></div>
-<div class="field"><label>Lokasi</label><input required></div><div class="field"><label>Kecamatan</label><input></div><div class="field"><label>Desa/Kelurahan</label><input></div>
-<div class="field full"><label>Dasar Hukum</label><textarea></textarea></div><div class="field full"><label>Tujuan Kegiatan</label><textarea></textarea></div><div class="field full"><label>Uraian Kegiatan</label><textarea></textarea></div>
-<div class="field"><label>Penanggung Jawab</label><select><option>R. Pratama</option><option>A. Nugraha</option><option>D. Wijaya</option><option>F. Ramadhan</option></select></div>
+<div id="activityModal" class="modal"><div class="modal-box"><div class="modal-head"><h2>Buat Kegiatan</h2><button class="close" type="button" aria-label="Tutup" onclick="closeModal('activityModal')">×</button></div>
+<form onsubmit="saveActivity(event)">
+<div class="form-section"><h4><span>1</span>Informasi Kegiatan</h4><div class="form-grid">
+<div class="field"><label>Nomor Kegiatan <em>*</em></label><input id="act_no" required placeholder="KEG-2026-001"></div>
+<div class="field"><label>Nama Kegiatan <em>*</em></label><input required placeholder="Contoh: Patroli Ketertiban Umum"></div>
+<div class="field full"><label>Jenis Kegiatan <em>*</em></label><select required><option value="">— Pilih jenis kegiatan —</option><option>Patroli</option><option>Penertiban</option><option>Pengawasan</option><option>Pengamanan</option><option>Monitoring</option><option>Sosialisasi</option><option>Pembinaan</option><option>Penegakan Perda</option><option>Penegakan Perkada</option><option>Pengawasan ketertiban umum</option><option>Kegiatan lainnya</option></select></div>
+</div></div>
+<div class="form-section"><h4><span>2</span>Waktu &amp; Lokasi</h4><div class="form-grid g3">
+<div class="field"><label>Tanggal <em>*</em></label><input type="date" required></div>
+<div class="field"><label>Jam Mulai</label><input type="time"></div>
+<div class="field"><label>Jam Selesai</label><input type="time"></div>
+<div class="field"><label>Lokasi <em>*</em></label><input required placeholder="Nama tempat / alamat"></div>
+<div class="field"><label>Kecamatan</label><input></div>
+<div class="field"><label>Desa/Kelurahan</label><input></div>
+</div></div>
+<div class="form-section"><h4><span>3</span>Dasar &amp; Uraian</h4><div class="form-grid">
+<div class="field full"><label>Dasar Hukum</label><textarea placeholder="Perda / Perkada / peraturan yang menjadi dasar"></textarea></div>
+<div class="field full"><label>Tujuan Kegiatan</label><textarea></textarea></div>
+<div class="field full"><label>Uraian Kegiatan</label><textarea></textarea></div>
+</div></div>
+<div class="form-section"><h4><span>4</span>Penanggung Jawab &amp; Status</h4><div class="form-grid">
+<div class="field"><label>Penanggung Jawab <em>*</em></label><select id="act_pic"><option value="">— Pilih penanggung jawab —</option></select><small id="act_pic_hint" class="hint"></small></div>
 <div class="field"><label>Status</label><select><option>Draft</option><option>Direncanakan</option><option>Disetujui</option><option>Sedang berlangsung</option><option>Selesai</option><option>Dibatalkan</option></select></div>
-<div class="field"><label>Personel yang Ditugaskan</label><input placeholder="Pilih personel..."></div><div class="field"><label>Kendaraan</label><input placeholder="Nomor kendaraan..."></div><div class="field"><label>Peralatan</label><input placeholder="Peralatan..."></div>
-</div><div class="form-actions"><button type="button" class="btn" onclick="closeModal('activityModal')">Batal</button><button class="btn primary">Simpan Kegiatan</button></div></form></div></div>
+</div></div>
+<div class="form-actions"><button type="button" class="btn" onclick="closeModal('activityModal')">Batal</button><button class="btn primary">Simpan Kegiatan</button></div></form></div></div>
 
 <div id="sptModal" class="modal"><div class="modal-box"><div class="modal-head"><h2>Buat Surat Perintah Tugas</h2><button class="close" onclick="closeModal('sptModal')">×</button></div>
 <form onsubmit="saveGeneric(event,'SPT berhasil dibuat')"><div class="form-grid"><div class="field"><label>Nomor SPT</label><input required value="800/003/SPT/2026"></div><div class="field"><label>Tanggal Pelaksanaan</label><input type="date" required></div><div class="field full"><label>Dasar Hukum</label><textarea></textarea></div><div class="field full"><label>Dasar Pelaksanaan</label><textarea></textarea></div><div class="field"><label>Kegiatan</label><select><option>Patroli Ketertiban Umum</option><option>Penertiban PKL</option><option>Sosialisasi Perda</option></select></div><div class="field"><label>Lokasi</label><input></div><div class="field"><label>Penanggung Jawab</label><input value="R. Pratama"></div><div class="field"><label>Jabatan</label><input value="Koordinator"></div><div class="field full"><label>Maksud dan Tujuan</label><textarea></textarea></div><div class="field full"><label>Uraian Tugas</label><textarea></textarea></div><div class="field full"><label>Daftar Personel</label><input placeholder="Data personel otomatis dari database"></div></div><div class="form-actions"><button type="button" class="btn" onclick="closeModal('sptModal')">Batal</button><button class="btn primary">Simpan & Preview</button></div></form></div></div>
@@ -1004,6 +1026,40 @@ window.updateDashboard=function(){
   }catch(e){console.warn('updateDashboard',e)}
 };
 window.updateDashboard();
+/* Form kegiatan: penanggung jawab dari Data Personel, nomor otomatis */
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  window.fillPic=function(keep){
+    var sel=$('act_pic');if(!sel)return;var cur=keep!==undefined?keep:sel.value;
+    var names=((window.__db||{}).personnel||[]).map(function(p){return String(p.name||'').trim()}).filter(Boolean);
+    if(cur&&names.indexOf(cur)<0)names.unshift(cur);
+    var seen={};names=names.filter(function(n){return seen[n]?0:(seen[n]=1)});
+    sel.innerHTML='';var o=document.createElement('option');o.value='';o.textContent=names.length?'— Pilih penanggung jawab —':'— Belum ada data personel —';sel.appendChild(o);
+    names.forEach(function(n){var x=document.createElement('option');x.value=n;x.textContent=n;sel.appendChild(x)});
+    sel.value=cur&&names.indexOf(cur)>=0?cur:'';
+    sel.required=names.length>0;
+    var h=$('act_pic_hint');if(h)h.textContent=names.length?'':'Tambahkan personel dulu di menu Data Personel.';
+  };
+  function nextNo(){var y=new Date().getFullYear(),n=((window.__acts||[]).length)+1;return 'KEG-'+y+'-'+String(n).padStart(3,'0')}
+  var _open=window.openModal;
+  window.openModal=function(id){
+    if(id==='activityModal'){
+      var f=document.querySelector('#activityModal form'),h=document.querySelector('#activityModal h2');
+      if(f&&(f.dataset.editIndex===undefined||f.dataset.editIndex==='')){f.reset();window.fillPic('');var no=$('act_no');if(no)no.value=nextNo();if(h)h.textContent='Buat Kegiatan'}
+      else window.fillPic();
+    }
+    return _open(id);
+  };
+  var _close=window.closeModal;
+  window.closeModal=function(id){
+    if(id==='activityModal'){var f=document.querySelector('#activityModal form');if(f)delete f.dataset.editIndex}
+    return _close(id);
+  };
+  var _edit=window.editActivity;
+  if(_edit)window.editActivity=function(i){var a=(window.__acts||[])[i];if(a)window.fillPic(a.pic||'');var r=_edit(i);var h=document.querySelector('#activityModal h2');if(h)h.textContent='Edit Kegiatan';return r};
+  var _upd=window.updateDashboard;
+  window.updateDashboard=function(){_upd&&_upd();var m=$('activityModal');if(m&&!m.classList.contains('show'))window.fillPic('')};
+})();
 /* UI helper: inisial avatar, nama sambutan, tanggal */
 (function(){
   var u=document.getElementById('userName');
