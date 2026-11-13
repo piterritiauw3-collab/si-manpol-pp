@@ -287,8 +287,8 @@ button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
     <button class="btn gold" onclick="openModal('activityModal')"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Buat Kegiatan</button>
   </div>
   <div class="grid kpis">
-    <div class="card kpi t-navy"><div><small>Total Kegiatan</small><strong>128</strong></div><div class="icon"><svg class="i" aria-hidden="true"><use href="#i-cal"/></svg></div></div><div class="card kpi t-navy"><div><small>Kegiatan Hari Ini</small><strong>8</strong></div><div class="icon"><svg class="i" aria-hidden="true"><use href="#i-play"/></svg></div></div><div class="card kpi t-green"><div><small>Kegiatan Selesai</small><strong>96</strong></div><div class="icon"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></div></div><div class="card kpi t-"><div><small>Sedang Berjalan</small><strong>12</strong></div><div class="icon"><svg class="i" aria-hidden="true"><use href="#i-repeat"/></svg></div></div>
-    <div class="card kpi t-amber"><div><small>Laporan Belum Dibuat</small><strong>9</strong></div><div class="icon"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg></div></div><div class="card kpi t-amber"><div><small>Menunggu Persetujuan</small><strong>7</strong></div><div class="icon"><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg></div></div><div class="card kpi t-red"><div><small>Jumlah Pelanggaran</small><strong>34</strong></div><div class="icon"><svg class="i" aria-hidden="true"><use href="#i-warn"/></svg></div></div><div class="card kpi t-green"><div><small>Jumlah Personel</small><strong>84</strong></div><div class="icon"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg></div></div>
+    <div class="card kpi t-navy"><div><small>Total Kegiatan</small><strong id="k_total">0</strong></div><div class="icon"><svg class="i" aria-hidden="true"><use href="#i-cal"/></svg></div></div><div class="card kpi t-navy"><div><small>Kegiatan Hari Ini</small><strong id="k_today">0</strong></div><div class="icon"><svg class="i" aria-hidden="true"><use href="#i-play"/></svg></div></div><div class="card kpi t-green"><div><small>Kegiatan Selesai</small><strong id="k_done">0</strong></div><div class="icon"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></div></div><div class="card kpi t-"><div><small>Sedang Berjalan</small><strong id="k_run">0</strong></div><div class="icon"><svg class="i" aria-hidden="true"><use href="#i-repeat"/></svg></div></div>
+    <div class="card kpi t-amber"><div><small>Laporan Belum Dibuat</small><strong id="k_norep">0</strong></div><div class="icon"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg></div></div><div class="card kpi t-amber"><div><small>Menunggu Persetujuan</small><strong id="k_wait">0</strong></div><div class="icon"><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg></div></div><div class="card kpi t-red"><div><small>Jumlah Pelanggaran</small><strong id="k_viol">0</strong></div><div class="icon"><svg class="i" aria-hidden="true"><use href="#i-warn"/></svg></div></div><div class="card kpi t-green"><div><small>Jumlah Personel</small><strong id="k_pers">0</strong></div><div class="icon"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg></div></div>
   </div>
   <div class="quick">
     <button onclick="openModal('activityModal')"><svg class="i" aria-hidden="true"><use href="#i-cal"/></svg>Kegiatan</button>
@@ -298,26 +298,21 @@ button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
     <button onclick="openModal('violationModal')"><svg class="i" aria-hidden="true"><use href="#i-warn"/></svg>Pelanggaran</button>
   </div>
   <div class="grid two">
-    <div class="card"><div class="section-title"><h3>Kegiatan per Bulan</h3><span class="muted">2026</span></div>
-      <div class="chart"><div class="col" title="Jan"><div class="bar" style="height:45%"></div></div><div class="col" title="Feb"><div class="bar" style="height:55%"></div></div><div class="col" title="Mar"><div class="bar" style="height:63%"></div></div><div class="col" title="Apr"><div class="bar" style="height:48%"></div></div><div class="col" title="Mei"><div class="bar" style="height:72%"></div></div><div class="col" title="Jun"><div class="bar" style="height:80%"></div></div><div class="col peak" title="Jul"><div class="bar" style="height:90%"></div></div><div class="col" title="Agu"><div class="bar" style="height:65%"></div></div></div><div class="chart-x"><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>Mei</span><span>Jun</span><span>Jul</span><span>Agu</span></div>
+    <div class="card"><div class="section-title"><h3>Kegiatan per Bulan</h3><span class="muted" id="chartYear"></span></div>
+      <div class="chart" id="chartBars"></div><div class="chart-x" id="chartX"></div><div id="chartEmpty" class="muted" style="text-align:center;padding:10px 0 0;font-size:12.5px"></div>
     </div>
     <div class="card"><div class="section-title"><h3>Status Laporan</h3></div>
-      <div class="stack"><i style="width:72%;background:var(--success)"></i><i style="width:14%;background:var(--gold)"></i><i style="width:6%;background:var(--danger)"></i><i style="width:8%;background:#aab4c8"></i></div>
-      <div class="legend" style="--c:var(--success)"><span>Selesai</span><b>72%</b></div>
-      <div class="legend" style="--c:var(--gold)"><span>Menunggu persetujuan</span><b>14%</b></div>
-      <div class="legend" style="--c:var(--danger)"><span>Dikembalikan</span><b>6%</b></div>
-      <div class="legend" style="--c:#aab4c8"><span>Belum dibuat</span><b>8%</b></div>
+      <div class="stack" id="stackBar"></div>
+      <div class="legend" style="--c:var(--success)"><span>Disetujui</span><b id="r_ok">0%</b></div>
+      <div class="legend" style="--c:var(--gold)"><span>Menunggu persetujuan</span><b id="r_wait">0%</b></div>
+      <div class="legend" style="--c:var(--danger)"><span>Ditolak</span><b id="r_rej">0%</b></div>
+      <div class="legend" style="--c:#aab4c8"><span>Draft</span><b id="r_draft">0%</b></div>
     </div>
   </div>
   <div style="height:16px"></div>
   <div class="card" style="padding:20px 0 0"><div class="section-title" style="padding:0 20px"><h3>Kegiatan Terbaru</h3><button class="btn" onclick="showPage('kegiatan')">Lihat semua</button></div>
     <div class="table-wrap" style="margin:0"><table class="table"><thead><tr><th>Kegiatan</th><th>Tanggal</th><th>Lokasi</th><th>Penanggung Jawab</th><th>Status</th></tr></thead>
-    <tbody>
-      <tr><td>Patroli Ketertiban Umum</td><td>19 Agu 2026</td><td>Kec. Sukamaju</td><td>R. Pratama</td><td><span class="badge info">Berlangsung</span></td></tr>
-      <tr><td>Penertiban PKL</td><td>18 Agu 2026</td><td>Pasar Utama</td><td>A. Nugraha</td><td><span class="badge success">Selesai</span></td></tr>
-      <tr><td>Sosialisasi Perda</td><td>17 Agu 2026</td><td>Kel. Mekarsari</td><td>D. Wijaya</td><td><span class="badge warning">Menunggu laporan</span></td></tr>
-      <tr><td>Pengamanan Kegiatan</td><td>16 Agu 2026</td><td>Alun-alun</td><td>F. Ramadhan</td><td><span class="badge success">Selesai</span></td></tr>
-    </tbody></table></div>
+    <tbody id="recentTable"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:26px">Belum ada kegiatan.</td></tr></tbody></table></div>
   </div>
 </section>
 
@@ -384,9 +379,9 @@ button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
 
 <section id="arsip" class="page"><div class="page-head"><div><h1>Arsip Digital</h1><p>Dokumen terstruktur dan mudah dicari.</p></div><button class="btn primary" onclick="openCrudModal('archive')"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Arsip Dokumen</button></div><div class="card"><table class="table"><thead><tr><th>Nomor</th><th>Nama Dokumen</th><th>Jenis</th><th>Tanggal</th><th>Kegiatan</th><th>Aksi</th></tr></thead><tbody><tr><td>800/001/SPT/2026</td><td>Surat Perintah Tugas</td><td>SPT</td><td>19 Agu</td><td>Patroli</td><td><button class="btn">Lihat</button></td></tr><tr><td>LAP-2026-009</td><td>Laporan Kegiatan Penertiban</td><td>Laporan</td><td>18 Agu</td><td>Penertiban PKL</td><td><button class="btn">Lihat</button></td></tr></tbody></table></div></section>
 
-<section id="statistik" class="page"><div class="page-head"><div><h1>Statistik</h1><p>Analisis kegiatan, lokasi, personel dan pelanggaran.</p></div></div><div class="grid three"><div class="card"><h3>Jenis Kegiatan</h3><p>Patroli <b style="float:right">38</b></p><div class="progress"><i style="width:78%"></i></div><p>Penertiban <b style="float:right">31</b></p><div class="progress"><i style="width:64%"></i></div><p>Pengawasan <b style="float:right">24</b></p><div class="progress"><i style="width:50%"></i></div></div><div class="card"><h3>Wilayah</h3><p>Sukamaju <b style="float:right">42</b></p><div class="progress"><i style="width:82%"></i></div><p>Mekarsari <b style="float:right">28</b></p><div class="progress"><i style="width:55%"></i></div><p>Harapan <b style="float:right">19</b></p><div class="progress"><i style="width:38%"></i></div></div><div class="card"><h3>Pelanggaran</h3><p>Ketertiban umum <b style="float:right">16</b></p><div class="progress"><i style="width:70%"></i></div><p>PKL <b style="float:right">11</b></p><div class="progress"><i style="width:48%"></i></div><p>Reklame <b style="float:right">7</b></p><div class="progress"><i style="width:31%"></i></div></div></div></section>
+<section id="statistik" class="page"><div class="page-head"><div><h1>Statistik</h1><p>Analisis kegiatan, lokasi, personel dan pelanggaran.</p></div></div><div class="grid three"><div class="card"><h3>Jenis Kegiatan</h3><div id="st_type"></div></div><div class="card"><h3>Wilayah</h3><div id="st_area"></div></div><div class="card"><h3>Pelanggaran</h3><div id="st_viol"></div></div></div></section>
 
-<section id="periodik" class="page"><div class="page-head"><div><h1>Laporan Periodik</h1><p>Rekap harian, mingguan, bulanan, triwulan, semester dan tahunan.</p></div><button class="btn primary" onclick="printDoc('Laporan Periodik SI-MANPOL PP')">Print / PDF</button></div><div class="card"><div class="form-grid"><div class="field"><label>Periode</label><select><option>Bulanan</option><option>Mingguan</option><option>Triwulan</option><option>Semester</option><option>Tahunan</option><option>Rentang Custom</option></select></div><div class="field"><label>Tahun</label><select><option>2026</option><option>2025</option></select></div></div><div style="height:18px"></div><table class="table"><thead><tr><th>Indikator</th><th>Jumlah</th><th>Persentase</th></tr></thead><tbody><tr><td>Total kegiatan</td><td>128</td><td>100%</td></tr><tr><td>Kegiatan selesai</td><td>96</td><td>75%</td></tr><tr><td>Pelanggaran</td><td>34</td><td>-</td></tr><tr><td>Tindak lanjut selesai</td><td>22</td><td>65%</td></tr></tbody></table></div></section>
+<section id="periodik" class="page"><div class="page-head"><div><h1>Laporan Periodik</h1><p>Rekap harian, mingguan, bulanan, triwulan, semester dan tahunan.</p></div><button class="btn primary" onclick="printDoc('Laporan Periodik SI-MANPOL PP')">Print / PDF</button></div><div class="card"><div class="form-grid"><div class="field"><label>Periode</label><select><option>Bulanan</option><option>Mingguan</option><option>Triwulan</option><option>Semester</option><option>Tahunan</option><option>Rentang Custom</option></select></div><div class="field"><label>Tahun</label><select><option>2026</option><option>2025</option></select></div></div><div style="height:18px"></div><table class="table"><thead><tr><th>Indikator</th><th>Jumlah</th><th>Persentase</th></tr></thead><tbody id="periodTable"></tbody></table></div></section>
 
 <section id="kendaraan" class="page"><div class="page-head"><div><h1>Kendaraan</h1><p>Aset kendaraan operasional.</p></div><button class="btn primary" onclick="openCrudModal('vehicle')"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Kendaraan</button></div><div class="card"><table class="table"><thead><tr><th>Nomor Kendaraan</th><th>Jenis</th><th>Merk</th><th>Tahun</th><th>Kondisi</th><th>Status</th><th>Pengguna</th><th>Aksi</th></tr></thead><tbody id="vehicleTable"><tr><td>D 9012 PP</td><td>Mobil Patroli</td><td>Contoh Motor Group</td><td>2024</td><td>Baik</td><td><span class="badge success">Tersedia</span></td><td>Operasional</td></tr><tr><td>D 9013 PP</td><td>Pickup</td><td>Contoh Auto</td><td>2023</td><td>Baik</td><td><span class="badge warning">Dipakai</span></td><td>Tim 2</td></tr></tbody></table></div></section>
 
@@ -745,7 +740,7 @@ restoreSession();
     personnel:[], assignments:[], spt:[], reports:[], violations:[], followups:[],
     vehicles:[], equipment:[], users:[], archives:[], photos:[]
   };
-  let db={};
+  let db={};window.__db=db;window.__acts=activities;
   Object.keys(defaults).forEach(k=>{db[k]=defaults[k].slice();});
   /* [DITAMBAHKAN] Peta jenis form CRUD -> {key lokal di db, nama tabel Supabase, label} */
   const TYPES={
@@ -834,7 +829,7 @@ restoreSession();
     if(error){toast('Gagal menghapus: '+error.message);return;}
     db[t.key].splice(index,1);renderAllCrud();toast(t.label+' berhasil dihapus.');
   }
-  function renderAllCrud(){
+  function renderAllCrud(){window.updateDashboard&&window.updateDashboard();
     const pt=document.getElementById('personnelTable');if(pt)pt.innerHTML=db.personnel.map((p,i)=>`<tr><td>${esc(p.nip)}</td><td>${esc(p.name)}</td><td>${esc(p.position)}</td><td>${esc(p.unit)}</td><td>${badge(p.status)}</td><td>${actions('personnel',i)}</td></tr>`).join('')||empty(6);
     const at=document.getElementById('assignmentTable');if(at)at.innerHTML=db.assignments.map((p,i)=>`<tr><td>${esc(p.person)}</td><td>${esc(p.activity)}</td><td>${esc(p.role)}</td><td>${date(p.date)}</td><td>${badge(p.status)}</td><td>${actions('assignment',i)}</td></tr>`).join('')||empty(6);
     const vt=document.getElementById('vehicleTable');if(vt)vt.innerHTML=db.vehicles.map((v,i)=>`<tr><td>${esc(v.no)}</td><td>${esc(v.type)}</td><td>${esc(v.brand)}</td><td>${esc(v.year)}</td><td>${esc(v.condition)}</td><td>${badge(v.status)}</td><td>${esc(v.user||'-')}</td><td>${actions('vehicle',i)}</td></tr>`).join('')||empty(8);
@@ -903,7 +898,7 @@ restoreSession();
     }
     renderActivitiesEnhanced();closeModal('activityModal');f.reset();
   };
-  function renderActivitiesEnhanced(){const body=document.getElementById('activityTable');if(!body)return;body.innerHTML=activities.map((a,i)=>`<tr><td>${esc(a.no)}</td><td>${esc(a.name)}</td><td>${esc(a.type)}</td><td>${date(a.date)}</td><td>${esc(a.loc)}</td><td>${esc(a.pic||'-')}</td><td>${badge(a.status)}</td><td><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" onclick="editActivity(${i})">Edit</button><button class="btn" onclick="viewActivityEnhanced(${i})">Detail</button><button class="btn danger" onclick="deleteActivityEnhanced(${i})">Hapus</button></div></td></tr>`).join('')||empty(8);}
+  function renderActivitiesEnhanced(){window.updateDashboard&&window.updateDashboard();const body=document.getElementById('activityTable');if(!body)return;body.innerHTML=activities.map((a,i)=>`<tr><td>${esc(a.no)}</td><td>${esc(a.name)}</td><td>${esc(a.type)}</td><td>${date(a.date)}</td><td>${esc(a.loc)}</td><td>${esc(a.pic||'-')}</td><td>${badge(a.status)}</td><td><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" onclick="editActivity(${i})">Edit</button><button class="btn" onclick="viewActivityEnhanced(${i})">Detail</button><button class="btn danger" onclick="deleteActivityEnhanced(${i})">Hapus</button></div></td></tr>`).join('')||empty(8);}
   window.editActivity=function(i){const a=activities[i];if(!a)return;const f=document.querySelector('#activityModal form');const inputs=f.querySelectorAll('input,select,textarea');const vals=[a.no,a.name,a.type,a.date,a.start_time||'',a.end_time||'',a.loc,a.kecamatan||'',a.kelurahan||'',a.legal_basis||'',a.objective||'',a.description||'',a.pic||'',a.status||'Draft'];inputs.forEach((el,n)=>{if(vals[n]!==undefined)el.value=vals[n];});f.dataset.editIndex=i;const h=document.querySelector('#activityModal h2');if(h)h.textContent='✎ Edit Kegiatan';openModal('activityModal');};
   window.deleteActivityEnhanced=async function(i){
     if(!confirm('Hapus kegiatan ini?'))return;
@@ -952,6 +947,63 @@ restoreSession();
 })();
 </script>
 <script>
+/* Dashboard dinamis dari data Supabase */
+window.updateDashboard=function(){
+  try{
+    var db=window.__db||{},acts=(window.__acts||[]),reps=db.reports||[];
+    var $=function(i){return document.getElementById(i)},set=function(i,v){var e=$(i);if(e)e.textContent=v};
+    var now=new Date(),pad=function(n){return String(n).padStart(2,'0')};
+    var today=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
+    var st=function(a){return String(a.status||'').toLowerCase()};
+    var done=acts.filter(function(a){return /selesai/.test(st(a))});
+    var names=reps.map(function(r){return String(r.activity||'').trim().toLowerCase()});
+    set('k_total',acts.length);
+    set('k_today',acts.filter(function(a){return a.date===today}).length);
+    set('k_done',done.length);
+    set('k_run',acts.filter(function(a){return /berlangsung/.test(st(a))}).length);
+    set('k_norep',done.filter(function(a){return names.indexOf(String(a.name||'').trim().toLowerCase())<0}).length);
+    set('k_wait',reps.filter(function(r){return /menunggu/i.test(r.status||'')}).length);
+    set('k_viol',(db.violations||[]).length);
+    set('k_pers',(db.personnel||[]).length);
+    /* grafik per bulan */
+    var yr=now.getFullYear(),mn=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],c=mn.map(function(){return 0});
+    acts.forEach(function(a){var d=String(a.date||'');if(d.slice(0,4)==String(yr)){var m=parseInt(d.slice(5,7),10)-1;if(m>=0&&m<12)c[m]++}});
+    var mx=Math.max.apply(null,c);
+    set('chartYear',yr);
+    var bars=$('chartBars'),bx=$('chartX');
+    if(bars){bars.innerHTML=c.map(function(v,i){return '<div class="col'+(mx>0&&v===mx?' peak':'')+'" title="'+mn[i]+': '+v+' kegiatan"><div class="bar" style="height:'+(mx?Math.max(v/mx*92,v?3:0):0)+'%"></div></div>'}).join('')}
+    if(bx)bx.innerHTML=mn.map(function(m){return '<span>'+m+'</span>'}).join('');
+    set('chartEmpty',mx?'Puncak: '+mn[c.indexOf(mx)]+' ('+mx+' kegiatan)':'Belum ada kegiatan pada tahun '+yr+'.');
+    /* status laporan */
+    var n=reps.length,cnt=function(re){return reps.filter(function(r){return re.test(String(r.status||''))}).length};
+    var ok=cnt(/disetujui/i),wt=cnt(/menunggu/i),rj=cnt(/tolak/i),dr=n-ok-wt-rj;
+    var pc=function(v){return n?Math.round(v/n*100)+'%':'0%'};
+    set('r_ok',pc(ok));set('r_wait',pc(wt));set('r_rej',pc(rj));set('r_draft',pc(dr));
+    var sb=$('stackBar');
+    if(sb)sb.innerHTML=n?[[ok,'var(--success)'],[wt,'var(--gold)'],[rj,'var(--danger)'],[dr,'#aab4c8']].filter(function(x){return x[0]>0}).map(function(x){return '<i style="width:'+x[0]/n*100+'%;background:'+x[1]+'"></i>'}).join(''):'<i style="width:100%;background:#e9edf4"></i>';
+    /* kegiatan terbaru */
+    var rt=$('recentTable');
+    if(rt){var esc=function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]})};
+      var list=acts.slice().sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))}).slice(0,5);
+      var fd=function(v){var d=new Date(v+'T00:00:00');return v&&!isNaN(d)?d.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}):'-'};
+      var bc=function(s){s=String(s||'').toLowerCase();return /selesai|disetujui/.test(s)?'success':/berlangsung/.test(s)?'info':/batal/.test(s)?'danger-bg':/draft|rencana|menunggu/.test(s)?'warning':'neutral'};
+      rt.innerHTML=list.length?list.map(function(a){return '<tr><td>'+esc(a.name)+'</td><td>'+fd(a.date)+'</td><td>'+esc(a.loc||'-')+'</td><td>'+esc(a.pic||'-')+'</td><td><span class="badge '+bc(a.status)+'">'+esc(a.status||'-')+'</span></td></tr>'}).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:26px">Belum ada kegiatan.</td></tr>';}
+
+    /* statistik */
+    var grp=function(arr,fn){var m={};arr.forEach(function(x){var k=String(fn(x)||'').trim()||'Tidak diisi';m[k]=(m[k]||0)+1});return Object.keys(m).map(function(k){return[k,m[k]]}).sort(function(a,b){return b[1]-a[1]}).slice(0,6)};
+    var esc2=function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]})};
+    var draw=function(id,rows){var e=$(id);if(!e)return;var t=rows.length?rows[0][1]:1;e.innerHTML=rows.length?rows.map(function(r){return '<p>'+esc2(r[0])+'<b>'+r[1]+'</b></p><div class="progress"><i style="width:'+Math.round(r[1]/t*100)+'%"></i></div>'}).join(''):'<p class="muted" style="display:block">Belum ada data.</p>'};
+    draw('st_type',grp(acts,function(a){return a.type}));
+    draw('st_area',grp(acts,function(a){return a.kecamatan||a.loc}));
+    draw('st_viol',grp(db.violations||[],function(v){return v.type}));
+    /* laporan periodik */
+    var pt=$('periodTable');
+    if(pt){var fu=db.followups||[],fdone=fu.filter(function(f){return /selesai/i.test(f.status||'')}).length;
+      var P=function(v,t){return t?Math.round(v/t*100)+'%':'-'};
+      pt.innerHTML='<tr><td>Total kegiatan</td><td>'+acts.length+'</td><td>'+(acts.length?'100%':'-')+'</td></tr><tr><td>Kegiatan selesai</td><td>'+done.length+'</td><td>'+P(done.length,acts.length)+'</td></tr><tr><td>Pelanggaran</td><td>'+(db.violations||[]).length+'</td><td>-</td></tr><tr><td>Tindak lanjut selesai</td><td>'+fdone+'</td><td>'+P(fdone,fu.length)+'</td></tr>';}
+  }catch(e){console.warn('updateDashboard',e)}
+};
+window.updateDashboard();
 /* UI helper: inisial avatar, nama sambutan, tanggal */
 (function(){
   var u=document.getElementById('userName');
