@@ -434,6 +434,53 @@ code{background:var(--surface-2);color:var(--accent-2)}
 html[data-theme="light"] .theme-switch.top .switch i{transform:translateX(22px)}
 html[data-theme="dark"] .theme-switch .i:first-child,html[data-theme="light"] .theme-switch .i:last-child{color:var(--text)}
 @media(max-width:700px){.theme-switch.top{padding:6px 9px;gap:6px}}
+
+/* ===== HERO SELAMAT DATANG ===== */
+@property --hang{syntax:"<angle>";inherits:false;initial-value:0deg}
+.hero{position:relative;margin-bottom:20px;border-radius:24px;padding:40px 24px 34px;text-align:center;overflow:hidden;isolation:isolate;background:linear-gradient(160deg,var(--card),var(--surface-2,var(--card)));border:1px solid transparent;box-shadow:0 24px 60px -30px rgba(109,61,240,.55)}
+.hero:before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;background:conic-gradient(from var(--hang),transparent 0 55%,#22d3ee 75%,#8b5cf6 90%,transparent);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:hBorder 7s linear infinite;pointer-events:none;z-index:2}
+@keyframes hBorder{to{--hang:360deg}}
+.h-orb{position:absolute;border-radius:50%;filter:blur(60px);opacity:.5;z-index:-1;will-change:transform}
+.h-orb.o1{width:340px;height:340px;left:-80px;top:-140px;background:radial-gradient(circle,#7c3aed,transparent 68%);animation:hO1 14s ease-in-out infinite alternate}
+.h-orb.o2{width:320px;height:320px;right:-70px;bottom:-150px;background:radial-gradient(circle,#06b6d4,transparent 68%);animation:hO2 17s ease-in-out infinite alternate}
+.h-orb.o3{width:220px;height:220px;left:45%;top:-90px;background:radial-gradient(circle,#f59e0b,transparent 70%);opacity:.22;animation:hO1 20s ease-in-out infinite alternate-reverse}
+html[data-theme="light"] .h-orb{opacity:.3}
+@keyframes hO1{to{transform:translate(120px,70px) scale(1.2)}}
+@keyframes hO2{to{transform:translate(-130px,-60px) scale(1.15)}}
+.h-grid{position:absolute;inset:0;z-index:-1;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:44px 44px;opacity:.45;-webkit-mask-image:radial-gradient(60% 90% at 50% 40%,#000,transparent);mask-image:radial-gradient(60% 90% at 50% 40%,#000,transparent);animation:hGrid 12s linear infinite}
+@keyframes hGrid{to{background-position:44px 44px}}
+.h-mark{position:absolute;right:3%;top:50%;width:190px;height:230px;transform:translateY(-50%);background:var(--logo) center/contain no-repeat;opacity:.1;filter:grayscale(.3);z-index:-1;animation:hMark 8s ease-in-out infinite}
+.h-mark:after{content:"";position:absolute;inset:0;background:inherit}
+@keyframes hMark{50%{transform:translateY(-54%) rotate(3deg)}}
+.h-in{position:relative;display:flex;flex-direction:column;align-items:center}
+.h-hi{display:flex;align-items:center;gap:14px;color:var(--accent-2,#8b5cf6);font-size:12.5px;font-weight:700;letter-spacing:4px;text-transform:uppercase;animation:hUp .7s both}
+.h-hi i{width:56px;height:1.5px;background:linear-gradient(90deg,transparent,#8b5cf6);position:relative}
+.h-hi i:last-child{background:linear-gradient(270deg,transparent,#8b5cf6)}
+.h-hi i:before{content:"";position:absolute;top:-2px;width:5px;height:5px;border-radius:50%;background:#22d3ee;box-shadow:0 0 10px #22d3ee;left:0;animation:hDot 3s ease-in-out infinite alternate}
+.h-hi i:last-child:before{left:auto;right:0}
+@keyframes hDot{to{transform:translateX(44px)}}
+.h-hi i:last-child:before{animation-name:hDotR}@keyframes hDotR{to{transform:translateX(-44px)}}
+.h-name{margin:14px 0 0;display:flex;flex-wrap:wrap;justify-content:center;font-size:clamp(28px,4.6vw,56px);line-height:1.08;font-weight:800;letter-spacing:-1px;text-transform:uppercase}
+.h-name span{display:inline-block;opacity:0;transform:translateY(30px) scale(.8);animation:hChar .7s cubic-bezier(.2,.9,.2,1) forwards,hWave 5s linear infinite;animation-delay:calc(.15s + var(--i)*.035s),calc(var(--i)*-.12s);background:linear-gradient(100deg,var(--text) 0%,#8b5cf6 25%,#22d3ee 50%,#8b5cf6 75%,var(--text) 100%);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.h-name span.sp{width:.3em}
+@keyframes hChar{to{opacity:1;transform:none}}@keyframes hWave{to{background-position:-300% 0}}
+.h-tag{margin:12px 0 0;color:var(--muted);font-size:14.5px;animation:hUp .7s .5s both}
+.h-meta{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px;margin-top:22px;padding:9px 20px;border-radius:999px;background:color-mix(in srgb,var(--card) 70%,transparent);border:1px solid var(--border);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:hUp .7s .65s both}
+.h-chip{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;font-weight:500}
+.h-chip .i{width:16px;height:16px;color:#8b5cf6}
+.h-chip b{color:var(--text);font-weight:700}
+.h-chip.role b{background:linear-gradient(90deg,#8b5cf6,#22d3ee);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.h-chip.clock b{font-variant-numeric:tabular-nums;letter-spacing:.5px}.h-chip em{font-style:normal;font-size:10.5px;font-weight:700;color:var(--faint);letter-spacing:1px}
+.h-sep{width:1px;height:18px;background:var(--border-2,var(--border))}
+.h-cta{margin-top:22px;animation:hUp .7s .8s both}
+.h-cta .btn{padding:0 26px;min-height:46px;font-size:14px;position:relative;overflow:hidden;animation:hPulse 3s ease-in-out infinite}
+.h-cta .btn:after{content:"";position:absolute;top:0;left:-70%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.4),transparent);transform:skewX(-20deg);animation:hSweep 3.4s ease-in-out infinite}
+@keyframes hSweep{0%,45%{left:-70%}100%{left:130%}}@keyframes hPulse{50%{box-shadow:0 0 0 8px rgba(139,92,246,.12),0 10px 30px rgba(109,61,240,.45)}}
+@keyframes hUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media(max-width:700px){.hero{padding:30px 14px 26px;border-radius:20px}.h-mark{display:none}.h-sep{display:none}.h-meta{border-radius:18px;gap:8px 16px;padding:10px 14px}.h-hi{letter-spacing:2.5px;font-size:11px}.h-hi i{width:28px}}
+@media(prefers-reduced-motion:reduce){.hero *,.hero:before{animation-duration:.01s!important;animation-iteration-count:1!important}}
+@media(max-width:700px){.h-hi i:before{display:none}}
 </style>
 <style>
 /* ===== LOGIN BARU ===== */
@@ -629,7 +676,7 @@ position:relative;min-height:100vh;display:grid;grid-template-columns:minmax(0,1
 <div class="content">
 <div class="scrim" onclick="document.getElementById('sidebar').classList.remove('open')"></div>
 
-<section id="dashboard" class="page active"><div class="page-head"><div><h1>Dashboard</h1><p>Selamat datang, <b id="welcomeName">Pengguna</b> &middot; <span id="todayLabel"></span></p></div><button class="btn primary" onclick="openModal('activityModal')"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Buat Kegiatan</button></div><div class="dgrid"><div class="card dc spark k1" id="dc_k1"></div><div class="card dc spark k2" id="dc_k2"></div><div class="card dc spark k3" id="dc_k3"></div><div class="card dc dstatus" id="dc_status"></div><div class="card dc drt" id="dc_rt"></div><div class="card dc dtrend" id="dc_trend"></div><div class="card dc dloc" id="dc_loc"></div><div class="card dc dtype" id="dc_type"></div><div class="card dc dbars" id="dc_bars"></div></div><div class="quick"><button onclick="openModal('activityModal')"><svg class="i" aria-hidden="true"><use href="#i-cal"/></svg>Kegiatan</button><button onclick="openCrudModal('spt')"><svg class="i" aria-hidden="true"><use href="#i-doc"/></svg>Surat Tugas</button><button onclick="openCrudModal('report')"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg>Laporan</button><button onclick="showPage('dokumentasi')"><svg class="i" aria-hidden="true"><use href="#i-img"/></svg>Foto Kegiatan</button><button onclick="openCrudModal('violation')"><svg class="i" aria-hidden="true"><use href="#i-warn"/></svg>Pelanggaran</button></div><div class="card" style="padding:20px 0 0"><div class="section-title" style="padding:0 20px"><h3>Kegiatan Terbaru</h3><button class="btn" onclick="showPage('kegiatan')">Lihat semua</button></div>
+<section id="dashboard" class="page active"><div class="hero" id="dHero"><i class="h-orb o1"></i><i class="h-orb o2"></i><i class="h-orb o3"></i><div class="h-grid"></div><div class="h-mark"></div><div class="h-in"><div class="h-hi"><i></i><span id="heroGreet">Selamat Datang</span><i></i></div><h1 class="h-name" id="heroName" aria-live="polite"></h1><span class="sr" ><b id="welcomeName">Pengguna</b><span id="todayLabel"></span></span><p class="h-tag">Pantau kegiatan, laporan, dan tindak lanjut dalam satu tempat.</p><div class="h-meta"><span class="h-chip role"><svg class="i"><use href="#i-users"/></svg><b id="heroRole">Admin</b></span><i class="h-sep"></i><span class="h-chip"><svg class="i"><use href="#i-cal"/></svg><span id="heroDate"></span></span><i class="h-sep"></i><span class="h-chip clock"><svg class="i"><use href="#i-clock"/></svg><b id="heroClock">00:00:00</b><em>WITA</em></span></div><div class="h-cta"><button class="btn primary" onclick="openModal('activityModal')"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Buat Kegiatan</button></div></div></div><div class="dgrid"><div class="card dc spark k1" id="dc_k1"></div><div class="card dc spark k2" id="dc_k2"></div><div class="card dc spark k3" id="dc_k3"></div><div class="card dc dstatus" id="dc_status"></div><div class="card dc drt" id="dc_rt"></div><div class="card dc dtrend" id="dc_trend"></div><div class="card dc dloc" id="dc_loc"></div><div class="card dc dtype" id="dc_type"></div><div class="card dc dbars" id="dc_bars"></div></div><div class="quick"><button onclick="openModal('activityModal')"><svg class="i" aria-hidden="true"><use href="#i-cal"/></svg>Kegiatan</button><button onclick="openCrudModal('spt')"><svg class="i" aria-hidden="true"><use href="#i-doc"/></svg>Surat Tugas</button><button onclick="openCrudModal('report')"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg>Laporan</button><button onclick="showPage('dokumentasi')"><svg class="i" aria-hidden="true"><use href="#i-img"/></svg>Foto Kegiatan</button><button onclick="openCrudModal('violation')"><svg class="i" aria-hidden="true"><use href="#i-warn"/></svg>Pelanggaran</button></div><div class="card" style="padding:20px 0 0"><div class="section-title" style="padding:0 20px"><h3>Kegiatan Terbaru</h3><button class="btn" onclick="showPage('kegiatan')">Lihat semua</button></div>
     <div class="table-wrap" style="margin:0"><table class="table"><thead><tr><th>Kegiatan</th><th>Tanggal</th><th>Lokasi</th><th>Penanggung Jawab</th><th>Status</th></tr></thead>
     <tbody id="recentTable"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:26px">Belum ada kegiatan.</td></tr></tbody></table></div>
   </div>
@@ -1926,6 +1973,23 @@ var _u=window.updateDashboard;window.updateDashboard=function(){var r=_u&&_u.app
 var _sp=window.showPage;if(_sp)window.showPage=function(id){var r=_sp.apply(this,arguments);if(id==='dashboard')render();return r};
 var _sa=window.showApp;if(_sa)window.showApp=function(){var r=_sa.apply(this,arguments);setTimeout(render,60);return r};
 render();
+})();
+
+/* ===== hero selamat datang ===== */
+(function(){
+ var u=document.getElementById('userName'),r=document.getElementById('userRole'),gN=document.getElementById('heroName'),last='';
+ function greet(){var h=new Date().getHours();return h<11?'Selamat Pagi':h<15?'Selamat Siang':h<18?'Selamat Sore':'Selamat Malam'}
+ function name(){var n=((u&&u.textContent)||'').trim()||'Pengguna';if(n===last)return;last=n;
+  gN.innerHTML=n.split('').map(function(ch,i){return ch===' '?'<span class="sp" style="--i:'+i+'"></span>':'<span style="--i:'+i+'">'+ch.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</span>'}).join('');gN.setAttribute('aria-label',n)}
+ function tick(){var d=new Date(),p=function(x){return('0'+x).slice(-2)};
+  var c=document.getElementById('heroClock');if(c)c.textContent=p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  var dt=document.getElementById('heroDate');if(dt)dt.textContent=d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var z=document.querySelector('.h-chip.clock em');if(z){var o=-d.getTimezoneOffset();z.textContent=o===420?'WIB':o===480?'WITA':o===540?'WIT':''}var g=document.getElementById('heroGreet');if(g)g.textContent=greet();
+  var ro=document.getElementById('heroRole');if(ro&&r)ro.textContent=(r.textContent||'').trim()||'Pengguna'}
+ if(!gN)return;
+ [u,r].forEach(function(el){if(el)new MutationObserver(function(){name();tick()}).observe(el,{childList:true,characterData:true,subtree:true})});
+ name();tick();setInterval(tick,1000);
+ var oldShow=window.showPage;if(typeof oldShow==='function')window.showPage=function(id){var x=oldShow.apply(this,arguments);if(id==='dashboard'){last='';name()}return x};
 })();
 
 </script>
