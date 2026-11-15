@@ -481,6 +481,28 @@ html[data-theme="light"] .h-orb{opacity:.3}
 @media(max-width:700px){.hero{padding:30px 14px 26px;border-radius:20px}.h-mark{display:none}.h-sep{display:none}.h-meta{border-radius:18px;gap:8px 16px;padding:10px 14px}.h-hi{letter-spacing:2.5px;font-size:11px}.h-hi i{width:28px}}
 @media(prefers-reduced-motion:reduce){.hero *,.hero:before{animation-duration:.01s!important;animation-iteration-count:1!important}}
 @media(max-width:700px){.h-hi i:before{display:none}}
+
+/* ===== BANNER HALAMAN (semua fitur) ===== */
+.page-head.phero{position:relative;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:0;margin-bottom:22px;padding:30px 20px 26px;border-radius:22px;overflow:hidden;isolation:isolate;background:linear-gradient(160deg,var(--card),var(--surface-2,var(--card)));border:1px solid transparent;box-shadow:0 20px 50px -32px rgba(109,61,240,.55);animation:hUp .55s both}
+.page-head.phero:before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;background:conic-gradient(from var(--hang),transparent 0 58%,#22d3ee 78%,#8b5cf6 92%,transparent);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:hBorder 8s linear infinite;pointer-events:none;z-index:2}
+.phero .h-orb{opacity:.4}.phero .h-orb.o1{width:260px;height:260px;left:-70px;top:-120px}.phero .h-orb.o2{width:240px;height:240px;right:-60px;bottom:-120px}
+.phero .ph-ico{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#7c3aed,#22d3ee);box-shadow:0 10px 26px -6px rgba(109,61,240,.7);margin-bottom:14px;position:relative;animation:phFloat 4.5s ease-in-out infinite}
+.phero .ph-ico:after{content:"";position:absolute;inset:-7px;border-radius:21px;border:1px solid rgba(139,92,246,.45);animation:lgPulse 3s ease-out infinite}
+.phero .ph-ico .i{width:25px;height:25px}
+@keyframes phFloat{50%{transform:translateY(-5px)}}
+.phero .ph-txt{display:flex;flex-direction:column;align-items:center}
+.phero h1{margin:0;font-size:clamp(24px,3.4vw,38px);font-weight:800;letter-spacing:-.8px;display:flex;flex-wrap:wrap;justify-content:center;line-height:1.12}
+.phero h1 span{display:inline-block;opacity:0;transform:translateY(22px) scale(.85);animation:hChar .6s cubic-bezier(.2,.9,.2,1) forwards,hWave 5s linear infinite;animation-delay:calc(.05s + var(--i)*.03s),calc(var(--i)*-.12s);background:linear-gradient(100deg,var(--text) 0%,#8b5cf6 25%,#22d3ee 50%,#8b5cf6 75%,var(--text) 100%);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.phero h1 span.sp{width:.28em}
+.phero .ph-line{width:64px;height:3px;border-radius:3px;margin:12px auto 0;background:linear-gradient(90deg,#8b5cf6,#22d3ee);animation:phLine .8s .3s both;transform-origin:center}
+@keyframes phLine{from{transform:scaleX(0);opacity:0}to{transform:none;opacity:1}}
+.phero p{margin:12px 0 0;max-width:640px;color:var(--muted);font-size:14px;line-height:1.55;animation:hUp .6s .25s both}
+.phero>.btn,.phero .head-actions,.phero .ph-act{margin-top:18px;animation:hUp .6s .35s both}
+.phero .head-actions,.phero .ph-act{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px}
+.phero .btn.primary{position:relative;overflow:hidden;min-height:42px;padding:0 22px}
+.phero .btn.primary:after{content:"";position:absolute;top:0;left:-70%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);animation:hSweep 3.6s ease-in-out infinite}
+@media(max-width:700px){.page-head.phero{padding:24px 14px 22px;border-radius:18px}.phero .ph-ico{width:46px;height:46px}}
+@media(prefers-reduced-motion:reduce){.phero *,.page-head.phero:before{animation-duration:.01s!important;animation-iteration-count:1!important}}
 </style>
 <style>
 /* ===== LOGIN BARU ===== */
@@ -1990,6 +2012,33 @@ render();
  [u,r].forEach(function(el){if(el)new MutationObserver(function(){name();tick()}).observe(el,{childList:true,characterData:true,subtree:true})});
  name();tick();setInterval(tick,1000);
  var oldShow=window.showPage;if(typeof oldShow==='function')window.showPage=function(id){var x=oldShow.apply(this,arguments);if(id==='dashboard'){last='';name()}return x};
+})();
+
+/* ===== banner di setiap halaman ===== */
+(function(){
+ function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+ function letters(h){var t=h.getAttribute('data-t')||h.textContent.trim();h.setAttribute('data-t',t);h.setAttribute('aria-label',t);
+  h.innerHTML=t.split('').map(function(c,i){return c===' '?'<span class="sp" style="--i:'+i+'"></span>':'<span style="--i:'+i+'">'+esc(c)+'</span>'}).join('')}
+ function build(sec){
+  var hd=sec.querySelector(':scope>.page-head');if(!hd||sec.id==='dashboard')return;
+  if(hd.classList.contains('phero')){var h=hd.querySelector('h1');if(h)letters(h);return}
+  var txt=hd.firstElementChild;if(!txt)return;
+  hd.classList.add('phero');
+  var rest=[].slice.call(hd.children).slice(1),
+      id=sec.id,M={arsip:'archive',dokumentasi:'img',kegiatan:'cal',penugasan:'clip',laporan:'edit',pelanggaran:'warn',tindaklanjut:'repeat',personel:'users',riwayat:'clock',statistik:'chart',kendaraan:'truck',peralatan:'tool',pengguna:'user',template:'layout',pengaturan:'gear',audit:'shield',periodik:'bars',spt:'doc'},ic=M[id]||'doc';
+  var orbs=document.createElement('div');orbs.innerHTML='<i class="h-orb o1"></i><i class="h-orb o2"></i>';
+  while(orbs.firstChild)hd.insertBefore(orbs.firstChild,hd.firstChild);
+  var ico=document.createElement('div');ico.className='ph-ico';ico.innerHTML='<svg class="i" aria-hidden="true"><use href="#i-'+ic+'"/></svg>';
+  hd.insertBefore(ico,txt);
+  txt.classList.add('ph-txt');
+  var line=document.createElement('i');line.className='ph-line';var p=txt.querySelector('p');txt.insertBefore(line,p||null);
+  var h1=txt.querySelector('h1');if(h1)letters(h1);
+  if(rest.length>1||(rest[0]&&!rest[0].classList.contains('head-actions'))){var w=document.createElement('div');w.className='ph-act';rest.forEach(function(r){w.appendChild(r)});hd.appendChild(w)}
+ }
+ function all(){document.querySelectorAll('section.page').forEach(build)}
+ all();
+ var o=window.showPage;
+ if(typeof o==='function')window.showPage=function(id){var r=o.apply(this,arguments);var s=document.getElementById(id);if(s){var hd=s.querySelector(':scope>.page-head');if(hd&&hd.classList.contains('phero')){hd.style.animation='none';void hd.offsetWidth;hd.style.animation='';}build(s)}return r};
 })();
 
 </script>
