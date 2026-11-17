@@ -2516,6 +2516,7 @@ function render(){
     '<div class="skp-seg">'+[1,2,3,4].map(function(q){return '<button type="button" data-a="q" data-q="'+q+'" class="'+(q===S.q?'on':'')+'">TW '+ROM[q-1]+'</button>'}).join('')+'</div>'+
     '<div class="skp-who">Pegawai: <b>'+esc(S.profile.personnel_name)+'</b><button type="button" data-a="changeWho">Ubah</button></div></div>'+
     '<div class="skp-stats"><div class="skp-stat"><small>RHK '+ROM[S.q-1]+'</small><b>'+rh.length+'</b></div><div class="skp-stat"><small>KEGIATAN TERKUMPUL</small><b>'+rows.length+'</b></div><div class="skp-stat"><small>SUDAH DIPETAKAN</small><b>'+(mappedN+manualN)+'</b></div><div class="skp-stat'+(un?' warn':'')+'"><small>BELUM DIPETAKAN</small><b>'+un+'</b></div></div>';
+  h+=driveCard();
   /* RHK */
   h+='<div class="skp-sec"><h2>Rencana Hasil Kerja (RHK)</h2><small>'+esc(qLabel())+' · '+esc(range())+'</small><span class="sp"></span><button class="skp-mini primary" data-a="addRhk" type="button">+ Tambah RHK</button></div>';
   if(!rh.length){
@@ -2529,7 +2530,7 @@ function render(){
       var row=it.kind==='kegiatan'?rows.find(function(x){return x.key===it.ref_key}):null;
       return '<div class="skp-it"><span class="d">'+esc(fmt(it.item_date))+'</span><span class="n">'+esc(it.title||'')+'</span>'+(row?tags(row):'<span class="skp-tags"><i>BERKAS</i></span>')+'<button class="x" type="button" data-a="unmap" data-id="'+esc(it.id)+'" title="Lepas dari RHK">×</button></div>'}).join('')+'</div>':'<p style="margin:10px 0 0;color:var(--muted);font-size:13px">Belum ada kegiatan yang dimasukkan ke RHK ini. Pilih dari daftar di bawah.</p>')+
     '<div class="skp-link"><input type="url" id="lnk_'+esc(r.id)+'" placeholder="Tempel link folder Google Drive bukti dukung…" value="'+esc(r.drive_link||'')+'"><button class="skp-mini primary" data-a="saveLink" data-id="'+esc(r.id)+'" type="button">Simpan link</button>'+(r.drive_link?'<button class="skp-mini" data-a="openLink" data-id="'+esc(r.id)+'" type="button">Buka</button>':'')+'</div>'+
-    '<div class="skp-tools" style="margin-top:12px"><button type="button" class="primary" data-a="uraian" data-id="'+esc(r.id)+'">Uraian realisasi</button><button type="button" data-a="paket" data-id="'+esc(r.id)+'">Unduh paket bukti (.zip)</button><button type="button" data-a="editRhk" data-id="'+esc(r.id)+'">Edit</button><button type="button" class="danger" data-a="delRhk" data-id="'+esc(r.id)+'">Hapus</button></div></div>';
+    '<div class="skp-tools" style="margin-top:12px"><button type="button" data-a="uraian" data-id="'+esc(r.id)+'">Uraian realisasi</button><button type="button" class="primary" data-a="toDrive" data-id="'+esc(r.id)+'">Kirim ke Drive</button><button type="button" data-a="paket" data-id="'+esc(r.id)+'">Unduh paket bukti (.zip)</button><button type="button" data-a="editRhk" data-id="'+esc(r.id)+'">Edit</button><button type="button" class="danger" data-a="delRhk" data-id="'+esc(r.id)+'">Hapus</button></div></div>';
   });
   /* belum dipetakan */
   var free=rows.filter(function(r){return !mapped(r)});
@@ -2616,44 +2617,163 @@ function openUraian(id){
   $('ur_cp').onclick=async function(){var t=$('ur_t');try{await navigator.clipboard.writeText(t.value)}catch(e){t.select();document.execCommand('copy')}toastS('Teks disalin.')};
 }
 
-/* ---------- paket bukti (.zip) ---------- */
+/* ---------- kumpulkan berkas bukti ---------- */
 async function fetchBlob(url){var r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);return r.blob()}
 function extOf(n,d){var m=String(n||'').match(/\.([a-zA-Z0-9]{2,5})$/);return m?m[1].toLowerCase():d}
-async function paket(id){
-  var rhk=S.rhk.find(function(x){return x.id===id});if(!rhk)return;
-  var rows=rowsOf(rhk);if(!rows.length){toastS('Belum ada bukti di RHK ini.','danger');return}
-  if(!window.JSZip){toastS('Pustaka ZIP belum termuat. Coba muat ulang halaman.','danger');return}
-  var no=myRhk().findIndex(function(x){return x.id===id})+1,zip=new window.JSZip(),root=zip.folder('RHK'+no+'_'+safe(rhk.name).slice(0,50)),csv=['No;Tanggal;Kegiatan;Jenis;Berkas;Keterangan'],missing=0,k=0;
-  toastS('Menyiapkan paket bukti…');
-  function pad(n){return ('0'+n).slice(-2)}
+function pad(n){return ('0'+n).slice(-2)}
+async function gather(rhk,prog){
+  var rows=rowsOf(rhk),csv=['No;Tanggal;Kegiatan;Jenis;Berkas;Keterangan'],files=[],missing=0;
   for(var i=0;i<rows.length;i++){
-    var r=rows[i],base=pad(i+1)+'_'+(r.date||'tanpa-tanggal')+'_'+safe(r.title).slice(0,40),dir=root.folder(base);
-    async function addDoc(type,x){
+    var r=rows[i],base=pad(i+1)+'_'+(r.date||'tanpa-tanggal')+'_'+safe(r.title).slice(0,40);
+    if(prog)prog('Mengumpulkan bukti '+(i+1)+' dari '+rows.length+'…');
+    var addDoc=async function(type,x){
       var label=type==='spt'?'SPT':'Laporan',nm=label+'_'+safe(x.no);
       try{
-        if(x.file_path){var url=await window.__signedUrl(x.file_path);dir.file(nm+'.'+extOf(x.file_name||x.file_path,'pdf'),await fetchBlob(url));csv.push([i+1,r.date,r.title,label,nm,'berkas terunggah'].join(';'));k++;return}
+        if(x.file_path){var url=await window.__signedUrl(x.file_path);files.push({dir:base,name:nm+'.'+extOf(x.file_name||x.file_path,'pdf'),blob:await fetchBlob(url)});csv.push([i+1,r.date,r.title,label,nm,'berkas terunggah'].join(';'));return}
         var g=window.__genDoc?await window.__genDoc(type,x):null;
-        if(g){dir.file(g.name,g.blob);csv.push([i+1,r.date,r.title,label,g.name,'dibuat dari template'].join(';'));k++}
+        if(g){files.push({dir:base,name:g.name,blob:g.blob});csv.push([i+1,r.date,r.title,label,g.name,'dibuat dari template'].join(';'))}
         else{missing++;csv.push([i+1,r.date,r.title,label,nm,'BELUM ADA BERKAS: upload dokumen atau template belum tersedia'].join(';'))}
       }catch(e){missing++;csv.push([i+1,r.date,r.title,label,nm,'GAGAL: '+e.message].join(';'))}
-    }
+    };
     for(var a=0;a<r.spt.length;a++)await addDoc('spt',r.spt[a]);
     for(var b=0;b<r.report.length;b++)await addDoc('report',r.report[b]);
     for(var c=0;c<Math.min(r.photos.length,20);c++){
-      var ph=r.photos[c];
-      try{dir.file('Foto_'+pad(c+1)+'.jpg',await fetchBlob(ph.image));k++}catch(e){missing++}
+      try{files.push({dir:base,name:'Foto_'+pad(c+1)+'.jpg',blob:await fetchBlob(r.photos[c].image)})}catch(e){missing++}
     }
     if(r.photos.length)csv.push([i+1,r.date,r.title,'Foto',r.photos.length+' foto',''].join(';'));
     if(r.manual){
-      try{var u2=await window.__signedUrl(r.manual.file_path);dir.file('Bukti_'+safe(r.manual.file_name||'berkas'),await fetchBlob(u2));csv.push([i+1,r.date,r.title,'Bukti sendiri',r.manual.file_name,''].join(';'));k++}catch(e){missing++;csv.push([i+1,r.date,r.title,'Bukti sendiri',r.manual.file_name,'GAGAL: '+e.message].join(';'))}
+      try{var u2=await window.__signedUrl(r.manual.file_path);files.push({dir:base,name:'Bukti_'+safe(r.manual.file_name||'berkas'),blob:await fetchBlob(u2)});csv.push([i+1,r.date,r.title,'Bukti sendiri',r.manual.file_name,''].join(';'))}catch(e){missing++;csv.push([i+1,r.date,r.title,'Bukti sendiri',r.manual.file_name,'GAGAL: '+e.message].join(';'))}
     }
     if(!r.spt.length&&!r.report.length&&!r.photos.length&&!r.manual)csv.push([i+1,r.date,r.title,'-','-','Tidak ada SPT/laporan/foto tercatat untuk kegiatan ini'].join(';'));
   }
-  root.file('00_Daftar_Bukti.csv','﻿'+csv.join('\r\n'));
-  root.file('00_Uraian_Realisasi.txt',uraianText(rhk));
+  files.push({dir:'',name:'00_Daftar_Bukti.csv',blob:new Blob(['﻿'+csv.join('\r\n')],{type:'text/csv'})});
+  files.push({dir:'',name:'00_Uraian_Realisasi.txt',blob:new Blob([uraianText(rhk)],{type:'text/plain'})});
+  return {rows:rows,files:files,missing:missing};
+}
+
+/* ---------- paket bukti (.zip) ---------- */
+async function paket(id){
+  var rhk=S.rhk.find(function(x){return x.id===id});if(!rhk)return;
+  if(!rowsOf(rhk).length){toastS('Belum ada bukti di RHK ini.','danger');return}
+  if(!window.JSZip){toastS('Pustaka ZIP belum termuat. Coba muat ulang halaman.','danger');return}
+  var no=myRhk().findIndex(function(x){return x.id===id})+1,zip=new window.JSZip(),root=zip.folder('RHK'+no+'_'+safe(rhk.name).slice(0,50));
+  toastS('Menyiapkan paket bukti…');
+  var g=await gather(rhk);
+  g.files.forEach(function(f){(f.dir?root.folder(f.dir):root).file(f.name,f.blob)});
   var blob=await zip.generateAsync({type:'blob'}),u=URL.createObjectURL(blob),el=document.createElement('a');
   el.href=u;el.download='SKP_TW'+ROM[S.q-1]+'_'+S.year+'_RHK'+no+'_'+safe(S.profile.personnel_name).slice(0,30)+'.zip';document.body.appendChild(el);el.click();el.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000);
-  toastS('Paket diunduh ('+k+' berkas'+(missing?', '+missing+' belum ada berkasnya – lihat 00_Daftar_Bukti.csv':'')+').',missing?'danger':undefined);
+  toastS('Paket diunduh ('+(g.files.length-2)+' berkas'+(g.missing?', '+g.missing+' belum ada berkasnya – lihat 00_Daftar_Bukti.csv':'')+').',g.missing?'danger':undefined);
+}
+
+/* ---------- Google Drive ---------- */
+var GCLIENT='';
+var GSCOPE='https://www.googleapis.com/auth/drive.file';
+var G={token:null,exp:0,hint:'',access:'anyone',gsi:null};
+try{G.hint=localStorage.getItem('skp_g_email')||'';G.access=localStorage.getItem('skp_g_access')||'anyone'}catch(e){}
+function gReady(){return !!GCLIENT&&GCLIENT.indexOf('__GOOGLE')!==0}
+function loadGsi(){
+  if(window.google&&google.accounts&&google.accounts.oauth2)return Promise.resolve();
+  if(G.gsi)return G.gsi;
+  G.gsi=new Promise(function(res,rej){var s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=function(){res()};s.onerror=function(){G.gsi=null;rej(new Error('Tidak dapat memuat layanan login Google. Periksa koneksi internet.'))};document.head.appendChild(s)});
+  return G.gsi;
+}
+async function ensureToken(force){
+  if(!gReady())throw new Error('Client ID Google belum dipasang oleh admin.');
+  if(G.token&&!force&&Date.now()<G.exp-60000)return G.token;
+  await loadGsi();
+  return new Promise(function(res,rej){
+    var tc=google.accounts.oauth2.initTokenClient({client_id:GCLIENT,scope:GSCOPE,
+      callback:function(r){if(r.error)return rej(new Error(r.error_description||r.error));G.token=r.access_token;G.exp=Date.now()+(r.expires_in||3600)*1000;res(G.token)},
+      error_callback:function(e){rej(new Error(e&&e.type==='popup_closed'?'Jendela login Google ditutup sebelum selesai.':e&&e.type==='popup_failed_to_open'?'Jendela login Google diblokir browser. Izinkan pop-up untuk situs ini.':'Login Google gagal.'))}});
+    tc.requestAccessToken(G.hint?{prompt:'',login_hint:G.hint}:{prompt:'select_account'});
+  });
+}
+async function gfetch(url,opts){
+  opts=opts||{};opts.headers=Object.assign({},opts.headers||{});
+  opts.headers.Authorization='Bearer '+await ensureToken();
+  var r=await fetch(url,opts);
+  if(r.status===401){G.token=null;opts.headers.Authorization='Bearer '+await ensureToken(true);r=await fetch(url,opts)}
+  if(!r.ok){var t='';try{t=(await r.json()).error.message}catch(e){}throw new Error('Google Drive '+r.status+(t?': '+t:''))}
+  return r;
+}
+var DR='https://www.googleapis.com/drive/v3/files';
+async function gjson(url,opts){return (await gfetch(url,opts)).json()}
+function qs(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+async function findOrCreateFolder(name,parent){
+  var q="mimeType='application/vnd.google-apps.folder' and trashed=false and name='"+qs(name)+"' and '"+(parent||'root')+"' in parents";
+  var r=await gjson(DR+'?fields='+encodeURIComponent('files(id,name)')+'&q='+encodeURIComponent(q));
+  if(r.files&&r.files.length)return r.files[0].id;
+  var c=await gjson(DR+'?fields=id',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,mimeType:'application/vnd.google-apps.folder',parents:parent?[parent]:undefined})});
+  return c.id;
+}
+async function folderAlive(id){try{var r=await gjson(DR+'/'+id+'?fields=id,trashed');return r&&!r.trashed}catch(e){return false}}
+async function listChildren(folder){
+  var out={},tok='';
+  do{var r=await gjson(DR+'?pageSize=1000&fields='+encodeURIComponent('nextPageToken,files(id,name)')+'&q='+encodeURIComponent("'"+folder+"' in parents and trashed=false")+(tok?'&pageToken='+tok:''));(r.files||[]).forEach(function(f){out[f.name]=f.id});tok=r.nextPageToken||''}while(tok);
+  return out;
+}
+async function putFile(name,blob,parent,existing){
+  var meta=existing?{name:name}:{name:name,parents:[parent]},bd='skp'+Date.now().toString(36)+Math.random().toString(36).slice(2);
+  var body=new Blob(['--'+bd+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(meta)+'\r\n--'+bd+'\r\nContent-Type: '+(blob.type||'application/octet-stream')+'\r\n\r\n',blob,'\r\n--'+bd+'--']);
+  var url='https://www.googleapis.com/upload/drive/v3/files'+(existing?'/'+existing:'')+'?uploadType=multipart&fields=id';
+  return gfetch(url,{method:existing?'PATCH':'POST',headers:{'Content-Type':'multipart/related; boundary='+bd},body:body});
+}
+async function whoAmI(){try{var r=await gjson('https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)');var e=r&&r.user&&r.user.emailAddress;if(e){G.hint=e;try{localStorage.setItem('skp_g_email',e)}catch(x){}}}catch(e){}}
+
+async function connectDrive(){
+  try{await ensureToken();await whoAmI();toastS('Google Drive terhubung'+(G.hint?' sebagai '+G.hint:'')+'.');render()}
+  catch(e){toastS(e.message||'Gagal menghubungkan Google Drive.','danger')}
+}
+function disconnectDrive(){
+  var t=G.token;G.token=null;G.exp=0;G.hint='';try{localStorage.removeItem('skp_g_email')}catch(e){}
+  try{if(t&&window.google&&google.accounts&&google.accounts.oauth2)google.accounts.oauth2.revoke(t,function(){})}catch(e){}
+  render();toastS('Koneksi Google Drive diputus.');
+}
+function driveCard(){
+  var on=!!G.token&&Date.now()<G.exp-60000,h='<div class="skp-card'+(on?'':' hl')+'" style="padding:16px 18px"><div class="skp-h"><span class="skp-no" style="background:'+(on?'linear-gradient(135deg,#16a34a,#22d3ee)':'linear-gradient(135deg,#7c3aed,#22d3ee)')+'">'+(on?'✓':'G')+'</span><div class="skp-t">';
+  if(!gReady())return h+'<h3>Kirim ke Google Drive belum aktif</h3><p>Admin perlu memasang Client ID Google di aplikasi. Sementara itu Anda tetap bisa memakai “Unduh paket bukti (.zip)” lalu mengunggahnya ke Drive sendiri.</p></div></div></div>';
+  h+='<h3>'+(on?'Google Drive terhubung':'Hubungkan Google Drive')+'</h3><p>'+(on?'Terhubung'+(G.hint?' sebagai <b>'+esc(G.hint)+'</b>':'')+'. Berkas dikirim ke Drive Anda sendiri, di folder <b>SKP '+S.year+'</b>.':'Aplikasi hanya boleh membuat dan mengisi folder SKP miliknya sendiri, bukan seluruh isi Drive Anda. Cukup sekali; Anda memilih akun Google dan menyetujui di layar Google.')+'</p></div>'+
+  '<div class="skp-tools"><select id="skpAcc" class="skp-year" style="height:36px;min-height:36px;font-size:12.5px"><option value="anyone"'+(G.access==='anyone'?' selected':'')+'>Link: siapa saja yang memiliki link</option><option value="private"'+(G.access==='private'?' selected':'')+'>Link: hanya saya (atur sendiri)</option></select>'+
+  (on?'<button type="button" data-a="gOff">Putuskan</button>':'<button type="button" class="primary" data-a="gOn">Hubungkan Google Drive</button>')+'</div></div></div>';
+  return h;
+}
+
+async function toDrive(id,btn){
+  var rhk=S.rhk.find(function(x){return x.id===id});if(!rhk)return;
+  if(!rowsOf(rhk).length){toastS('Belum ada bukti di RHK ini.','danger');return}
+  if(!gReady()){toastS('Client ID Google belum dipasang oleh admin.','danger');return}
+  var no=myRhk().findIndex(function(x){return x.id===id})+1,m,set=function(t,p){var e=$('dv_t');if(e)e.textContent=t;var b=$('dv_b');if(b&&p!=null)b.style.width=p+'%'};
+  try{
+    await ensureToken();                       /* dipanggil langsung dari klik agar pop-up tidak diblokir */
+    if(!G.hint)await whoAmI();
+    modal(head('Mengirim ke Google Drive')+'<p id="dv_t" style="margin:0 0 12px;color:var(--text)">Menyiapkan…</p><div class="skp-bar-bg"><div class="skp-bar-fg" id="dv_b" style="width:3%"></div></div><p style="margin:12px 0 0;color:var(--muted);font-size:12.5px">Jangan tutup halaman ini sampai selesai.</p>');
+    set('Mengumpulkan bukti…',5);
+    var g=await gather(rhk,function(t){set(t,10)});
+    set('Menyiapkan folder di Drive…',20);
+    var root=await findOrCreateFolder('SKP '+S.year),tw=await findOrCreateFolder('Triwulan '+ROM[S.q-1],root),folder=rhk.drive_folder_id;
+    if(!folder||!(await folderAlive(folder)))folder=await findOrCreateFolder('RHK '+no+' - '+rhk.name.replace(/[\\\/:*?"<>|]+/g,' ').slice(0,60).trim(),tw);
+    var have=await listChildren(folder),total=g.files.length,done=0;
+    for(var i=0;i<g.files.length;i++){
+      var f=g.files[i],nm=f.dir?f.dir.slice(0,48)+' - '+f.name:f.name;
+      set('Mengunggah '+(i+1)+' dari '+total+': '+nm,20+Math.round((i/total)*72));
+      await putFile(nm,f.blob,folder,have[nm]);done++;
+    }
+    set('Mengatur akses link…',95);
+    var note='';
+    if(G.access==='anyone'){try{await gfetch(DR+'/'+folder+'/permissions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'reader',type:'anyone'})})}catch(e){note='Berkas terunggah, tetapi akses “siapa saja yang memiliki link” gagal diatur ('+e.message+'). Atur berbagi folder ini secara manual di Google Drive.'}}
+    var link='https://drive.google.com/drive/folders/'+folder;
+    var u=await sbClient.from('skp_rhk').update({drive_link:link,drive_folder_id:folder}).eq('id',id).select().single();
+    if(u.error)u=await sbClient.from('skp_rhk').update({drive_link:link}).eq('id',id).select().single();
+    if(!u.error)S.rhk[S.rhk.findIndex(function(x){return x.id===id})]=Object.assign({},rhk,u.data,{drive_folder_id:folder});
+    render();
+    modal(head('Berhasil dikirim ke Drive')+'<p style="margin:0 0 6px;color:var(--text)"><b>'+done+' berkas</b> terunggah ke folder <b>SKP '+S.year+' / Triwulan '+ROM[S.q-1]+' / RHK '+no+'</b>.'+(g.missing?' <span style="color:#fbbf24">'+g.missing+' dokumen belum punya berkas (lihat 00_Daftar_Bukti.csv di folder).</span>':'')+'</p>'+(note?'<p style="color:#fbbf24;font-size:13px">'+esc(note)+'</p>':'')+
+      '<div class="field" style="margin-top:12px"><label>Link folder (sudah tersimpan di RHK)</label><input id="dv_l" readonly value="'+esc(link)+'"></div><p style="margin:0;color:var(--muted);font-size:12.5px">Salin link ini ke kolom bukti dukung di MyASN.</p><div class="form-actions"><button class="btn" type="button" onclick="closeModal(\'skpModal\')">Tutup</button><button class="btn" type="button" id="dv_cp">Salin link</button><button class="btn primary" type="button" id="dv_op">Buka di Drive</button></div>');
+    $('dv_cp').onclick=async function(){try{await navigator.clipboard.writeText(link)}catch(e){$('dv_l').select();document.execCommand('copy')}toastS('Link disalin.')};
+    $('dv_op').onclick=function(){window.open(link,'_blank','noopener')};
+  }catch(e){
+    var mm=$('skpModal');if(mm&&mm.classList.contains('show'))closeModal('skpModal');
+    toastS(e.message||'Gagal mengirim ke Drive.','danger');
+  }
 }
 
 /* ---------- aksi ---------- */
@@ -2684,6 +2804,9 @@ document.addEventListener('click',async function(e){
   else if(a==='uraian')openUraian(id);
   else if(a==='paket'){el.disabled=true;try{await paket(id)}catch(err){toastS('Gagal membuat paket: '+(err.message||err),'danger')}el.disabled=false}
   else if(a==='addManual')manualForm();
+  else if(a==='gOn')connectDrive();
+  else if(a==='gOff')disconnectDrive();
+  else if(a==='toDrive'){el.disabled=true;try{await toDrive(id,el)}finally{el.disabled=false}}
   else if(a==='bulk'){
     var to=$('skpBulk').value,keys=Object.keys(S.picked).filter(function(k){return S.picked[k]});
     if(!to){toastS('Pilih RHK tujuan.','danger');return}if(!keys.length){toastS('Centang kegiatan dulu.','danger');return}
@@ -2692,7 +2815,8 @@ document.addEventListener('click',async function(e){
 });
 document.addEventListener('change',async function(e){
   var root=$('skpRoot');if(!root||!root.contains(e.target))return;var t=e.target;
-  if(t.id==='skpYear'){S.year=+t.value;S.picked={};render()}
+  if(t.id==='skpAcc'){G.access=t.value;try{localStorage.setItem('skp_g_access',t.value)}catch(x){}}
+  else if(t.id==='skpYear'){S.year=+t.value;S.picked={};render()}
   else if(t.id==='skpAll'){root.querySelectorAll('.skp-ck').forEach(function(c){c.checked=t.checked;S.picked[c.getAttribute('data-k')]=t.checked})}
   else if(t.classList.contains('skp-ck')){S.picked[t.getAttribute('data-k')]=t.checked}
   else if(t.getAttribute('data-a')==='assign'&&t.value){if(await assign(t.getAttribute('data-k'),t.value)){render();toastS('Dimasukkan ke RHK.')}}
