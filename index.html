@@ -527,6 +527,19 @@ html[data-theme="light"] .h-orb{opacity:.3}
 .ph-logos .pl:after{content:"";position:absolute;inset:-14px;border-radius:50%;border:1px solid rgba(139,92,246,.25)}
 @media(max-width:900px){.ph-logos .pl{height:60px}.ph-logos .pemda{left:3%;width:44px;opacity:.55}.ph-logos .polpp{right:3%;width:50px;opacity:.55}}
 @media(max-width:560px){.ph-logos{display:none}}
+
+/* ===== logo Pol PP besar & buram di belakang judul ===== */
+@keyframes plFloat{50%{transform:translateY(calc(-50% - 6px))}}
+@keyframes wmDrift{0%,100%{transform:translate(-50%,-50%) scale(1) rotate(0)}50%{transform:translate(-50%,-52%) scale(1.04) rotate(1.5deg)}}
+.ph-logos .pemda{animation:plFloat 6s ease-in-out infinite}
+.ph-logos .polpp{left:50%;right:auto;top:50%;width:min(300px,60%);height:340px;transform:translate(-50%,-50%);opacity:.15;filter:blur(2.5px) saturate(.9);animation:wmDrift 12s ease-in-out infinite;z-index:0}
+.ph-logos .polpp:after{display:none}
+html[data-theme="light"] .ph-logos .polpp{opacity:.12}
+.page-head.phero .ph-ico,.page-head.phero .ph-txt,.page-head.phero>.btn,.page-head.phero .head-actions,.page-head.phero .ph-act{position:relative;z-index:3}
+.h-mark{right:auto;left:50%;top:50%;width:340px;height:400px;transform:translate(-50%,-50%);opacity:.13;filter:blur(2.5px);animation:wmDrift 12s ease-in-out infinite}
+html[data-theme="light"] .h-mark{opacity:.12}
+@media(max-width:900px){.ph-logos .polpp{display:block;opacity:.13;height:240px;width:60%;right:auto}.ph-logos .pemda{opacity:.55}.h-mark{display:block;width:240px;height:290px}}
+@media(max-width:560px){.ph-logos{display:block}.ph-logos .pemda{display:none}}
 </style>
 <style>
 /* ===== LOGIN BARU ===== */
@@ -659,6 +672,41 @@ position:relative;min-height:100vh;display:grid;grid-template-columns:minmax(0,1
 .lg-link em{width:11px;height:11px;transform:rotate(45deg);border-radius:2px;background:linear-gradient(135deg,var(--lg-p),var(--lg-c));box-shadow:0 0 16px rgba(139,92,246,.9);animation:lgDia 3s ease-in-out infinite}
 @keyframes lgDia{50%{transform:rotate(225deg) scale(1.25);box-shadow:0 0 24px rgba(34,211,238,.9)}}
 @media(max-width:900px){.lg-pair{justify-content:center;margin-bottom:20px}.lg-pair .lg-emblem{width:104px;height:104px}.lg-pair .lg-logo{width:64px;height:76px}.lg-pair .lg-logo.pemda{width:56px;height:80px}.lg-link{height:104px}.lg-link i{height:22px}.lg-cap{font-size:9.5px;letter-spacing:.8px}}
+
+</style>
+<style>
+/* ===== PEMILIH PETUGAS ===== */
+.pp{position:relative}
+.pp-box{display:flex;flex-wrap:wrap;align-items:center;gap:7px;min-height:48px;padding:7px 10px;border-radius:12px;background:var(--input-bg,var(--card));border:1px solid var(--border);cursor:text;transition:border-color .2s,box-shadow .2s}
+.pp.open .pp-box,.pp-box:focus-within{border-color:#8b5cf6;box-shadow:0 0 0 3px rgba(139,92,246,.2)}
+.pp-chips{display:contents}
+.pp-chip{display:inline-flex;align-items:center;gap:7px;padding:4px 6px 4px 5px;border-radius:999px;background:rgba(139,92,246,.16);border:1px solid rgba(139,92,246,.4);color:var(--text);font-size:13px;font-weight:600;animation:ppIn .25s cubic-bezier(.2,.9,.2,1)}
+@keyframes ppIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}
+.pp-chip .av{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:10.5px;font-weight:800;color:#fff;background:linear-gradient(135deg,#7c3aed,#22d3ee)}
+.pp-chip.warn{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.5)}
+.pp-chip.warn .av{background:#f59e0b}
+.pp-chip button{all:unset;cursor:pointer;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:15px;line-height:1;color:var(--muted)}
+.pp-chip button:hover{background:rgba(239,68,68,.25);color:#fff}
+.pp .pp-q{flex:1;min-width:140px;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;padding:6px 4px!important;min-height:0!important;height:auto!important;color:var(--text);font-size:14px}
+.pp-pop{margin-top:8px;border-radius:14px;border:1px solid var(--border);background:var(--card);box-shadow:0 18px 40px -20px rgba(0,0,0,.6);overflow:hidden;animation:ppIn .2s ease-out}
+.pp-pop[hidden]{display:none}
+.pp-tools{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)}
+.pp-tools .pp-count{flex:1;font-weight:600}
+.pp-tools button{all:unset;cursor:pointer;padding:4px 10px;border-radius:8px;font-weight:700;color:#a78bfa}
+.pp-tools button:hover{background:rgba(139,92,246,.15)}
+.pp-list{max-height:250px;overflow:auto;padding:5px}
+.pp-row{display:flex;align-items:center;gap:11px;padding:8px 9px;border-radius:10px;cursor:pointer;transition:background .15s}
+.pp-row:hover,.pp-row.hl{background:rgba(139,92,246,.13)}
+.pp-row .av{flex:0 0 34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;color:#fff;background:linear-gradient(135deg,#7c3aed,#22d3ee)}
+.pp-row .tx{flex:1;min-width:0}.pp-row b{display:block;font-size:13.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pp-row small{display:block;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pp-row .ck{flex:0 0 20px;height:20px;border-radius:6px;border:1.5px solid var(--border-2,#5b6288);display:grid;place-items:center;color:transparent;transition:all .15s}
+.pp-row.on .ck{background:linear-gradient(135deg,#7c3aed,#22d3ee);border-color:transparent;color:#fff}
+.pp-row.off{opacity:.45;cursor:not-allowed}
+.pp-row .st{font-size:10.5px;padding:2px 8px;border-radius:999px;background:rgba(245,158,11,.18);color:#fbbf24;font-weight:700}
+.pp-empty{padding:18px;text-align:center;color:var(--muted);font-size:13px}
+.pp .hint,.pp-hint{display:block;margin-top:6px;font-size:12px;color:var(--muted)}
+.pp-note{padding:12px 14px;border-radius:12px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);color:var(--text);font-size:12.5px;line-height:1.5}
 
 </style>
 </head>
@@ -1306,7 +1354,7 @@ restoreSession();
     actIn.addEventListener('change',()=>{
       const a=activities.find(x=>x.name===actIn.value);if(!a)return;
       const put=(id,v)=>{const el=document.getElementById(id);if(el&&!el.value&&v)el.value=v;};
-      put('crud_date',a.date);put('crud_location',a.loc);put(picId,a.pic);
+      put('crud_date',a.date);put('crud_location',a.loc);if(type==='spt')put(picId,a.pic);
     });
   }
   function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
@@ -1315,15 +1363,15 @@ restoreSession();
   function actions(type,i,extra=''){return `<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" onclick="openCrudModal('${type}',${i})">Edit</button>${extra}<button class="btn danger" onclick="deleteCrud('${type}',${i})">Hapus</button></div>`;}
   const schemas={
     personnel:{title:'Personel',fields:[['nip','NIP/ID','text',true],['name','Nama Lengkap','text',true],['position','Jabatan','text',true],['unit','Unit/Bidang','text',true],['status','Status','select',true,['Aktif','Nonaktif','Cuti','Diperbantukan']]]},
-    assignment:{title:'Penugasan',fields:[['person','Personel','text',true],['activity','Kegiatan','text',true],['role','Peran/Jabatan','text',true],['date','Tanggal','date',true],['status','Status','select',true,['Aktif','Menunggu','Selesai','Dibatalkan']]]},
+    assignment:{title:'Penugasan',fields:[['person','Personel','person',true],['activity','Kegiatan','text',true],['role','Peran/Jabatan','text',true],['date','Tanggal','date',true],['status','Status','select',true,['Aktif','Menunggu','Selesai','Dibatalkan']]]},
     vehicle:{title:'Kendaraan',fields:[['no','Nomor Kendaraan','text',true],['type','Jenis','text',true],['brand','Merk','text',true],['year','Tahun','number',true],['condition','Kondisi','text',true],['status','Status','select',true,['Tersedia','Dipakai','Servis','Rusak']]]},
     equipment:{title:'Peralatan',fields:[['name','Nama Peralatan','text',true],['qty','Jumlah','number',true],['condition','Kondisi','text',true],['location','Lokasi Penyimpanan','text',true],['status','Status','select',true,['Tersedia','Dipakai','Rusak','Hilang']]]},
     user:{title:'Pengguna',fields:[['name','Nama','text',true],['email','Email','email',true],['role','Role','select',true,['Admin','Pimpinan','Operator/Admin Bidang','Petugas Lapangan']],['status','Status','select',true,['Aktif','Nonaktif']]]},
     violation:{title:'Data Pelanggaran',fields:[['date','Tanggal','date',true],['type','Jenis Pelanggaran','text',true],['location','Lokasi','text',true],['action','Tindakan','select',true,['Pembinaan','Peringatan','Penertiban','Penindakan']],['status','Status','select',true,['Proses','Tindak lanjut','Selesai','Dibatalkan']],['note','Keterangan','textarea',false]]},
-    followup:{title:'Tindak Lanjut',fields:[['finding','Temuan','text',true],['pic','Penanggung Jawab','text',true],['agency','Instansi','text',true],['deadline','Deadline','date',true],['status','Status','select',true,['Dalam proses','Selesai','Terlambat','Dibatalkan']],['note','Catatan','textarea',false]]},
+    followup:{title:'Tindak Lanjut',fields:[['finding','Temuan','text',true],['pic','Penanggung Jawab','person',true],['agency','Instansi','text',true],['deadline','Deadline','date',true],['status','Status','select',true,['Dalam proses','Selesai','Terlambat','Dibatalkan']],['note','Catatan','textarea',false]]},
     archive:{title:'Arsip Digital',fields:[['no','Nomor Dokumen','text',true],['name','Nama Dokumen','text',true],['type','Jenis','select',true,['SPT','Laporan','Berita Acara','Surat','Lainnya']],['date','Tanggal','date',true],['activity','Kegiatan','text',true]]},
-    spt:{title:'Surat Perintah Tugas',fields:[['no','Nomor SPT','text',true],['activity','Kegiatan','text',true],['date','Tanggal','date',true],['location','Lokasi','text',true],['pic','Penanggung Jawab','text',true],['status','Status','select',true,['Draft','Aktif','Arsip','Dibatalkan']]]},
-    report:{title:'Laporan Kegiatan',fields:[['no','Nomor Laporan','text',true],['activity','Kegiatan','text',true],['date','Tanggal','date',true],['person','Petugas','text',true],['status','Status','select',true,['Draft','Menunggu persetujuan','Disetujui','Ditolak']],['result','Hasil Kegiatan','textarea',false],['finding','Temuan','textarea',false],['action','Tindakan','textarea',false],['note','Keterangan','textarea',false]]}
+    spt:{title:'Surat Perintah Tugas',fields:[['no','Nomor SPT','text',true],['activity','Kegiatan','text',true],['date','Tanggal','date',true],['location','Lokasi','text',true],['pic','Penanggung Jawab','person',true],['team','Petugas yang Ditugaskan','people',false],['status','Status','select',true,['Draft','Aktif','Arsip','Dibatalkan']]]},
+    report:{title:'Laporan Kegiatan',fields:[['no','Nomor Laporan','text',true],['activity','Kegiatan','text',true],['date','Tanggal','date',true],['person','Petugas','people',true],['status','Status','select',true,['Draft','Menunggu persetujuan','Disetujui','Ditolak']],['result','Hasil Kegiatan','textarea',false],['finding','Temuan','textarea',false],['action','Tindakan','textarea',false],['note','Keterangan','textarea',false]]}
   };
   function ensureModal(){
     let m=document.getElementById('crudModal');if(m)return m;
@@ -1337,12 +1385,13 @@ restoreSession();
     const listKey=TYPES[type].key;
     const item=index!==null?db[listKey][index]:{};
     document.getElementById('crudTitle').textContent=(index===null?'Tambah ':'✎ Edit ')+schema.title;
-    form.innerHTML='<input type="hidden" id="crudType" value="'+type+'"><input type="hidden" id="crudIndex" value="'+(index??'')+'"><div class="form-grid">'+schema.fields.map(f=>{const [key,label,input,required,opts]=f;const val=esc(item[key]??'');if(input==='select')return `<div class="field"><label>${esc(label)}</label><select id="crud_${key}" ${required?'required':''}>${opts.map(o=>`<option ${String(item[key]||'')===o?'selected':''}>${esc(o)}</option>`).join('')}</select></div>`;if(input==='textarea')return `<div class="field full"><label>${esc(label)}</label><textarea id="crud_${key}" ${required?'required':''}>${val}</textarea></div>`;return `<div class="field"><label>${esc(label)}</label><input id="crud_${key}" type="${input}" value="${val}" ${required?'required':''}></div>`;}).join('')+'</div>'+docField(type,item)+'<div class="form-actions"><button type="button" class="btn" onclick="closeModal(\'crudModal\')">Batal</button><button type="submit" class="btn primary">Simpan</button></div>';
+    form.innerHTML='<input type="hidden" id="crudType" value="'+type+'"><input type="hidden" id="crudIndex" value="'+(index??'')+'"><div class="form-grid">'+schema.fields.map(f=>{const [key,label,input,required,opts]=f;const val=esc(item[key]??'');if(input==='people'||input==='person')return window.ppField(key,label,input==='people',required,item[key]);if(input==='select')return `<div class="field"><label>${esc(label)}</label><select id="crud_${key}" ${required?'required':''}>${opts.map(o=>`<option ${String(item[key]||'')===o?'selected':''}>${esc(o)}</option>`).join('')}</select></div>`;if(input==='textarea')return `<div class="field full"><label>${esc(label)}</label><textarea id="crud_${key}" ${required?'required':''}>${val}</textarea></div>`;return `<div class="field"><label>${esc(label)}</label><input id="crud_${key}" type="${input}" value="${val}" ${required?'required':''}></div>`;}).join('')+'</div>'+docField(type,item)+'<div class="form-actions"><button type="button" class="btn" onclick="closeModal(\'crudModal\')">Batal</button><button type="submit" class="btn primary">Simpan</button></div>';
     form.onsubmit=function(e){e.preventDefault();saveCrud(type,index,listKey,schema);};
-    enhanceCrud(type,index);
+    enhanceCrud(type,index);if(window.ppInit)window.ppInit(form);
     openModal('crudModal');
   }
   async function saveCrud(type,index,key,schema){
+    for(const f of schema.fields){if((f[2]==='people'||f[2]==='person')&&f[3]&&!(document.getElementById('crud_'+f[0])||{value:''}).value.trim()){toast('Pilih '+f[1]+' terlebih dahulu.','danger');return;}}
     const obj={};schema.fields.forEach(f=>{obj[f[0]]=document.getElementById('crud_'+f[0]).value.trim();});
     const table=TYPES[type].table;
     const submitBtn=document.querySelector('#crudForm button[type=submit]');
@@ -1361,12 +1410,12 @@ restoreSession();
       }else if(rm&&rm.checked){obj.file_path=null;obj.file_name=null;}
     }
     if(index===null||index===undefined){
-      const {data,error}=await sbClient.from(table).insert(obj).select().single();
+      const {data,error}=await sbClient.from(table).insert(window.__clean(obj,table)).select().single();
       if(error){toast('Gagal menyimpan: '+error.message);return;}
       db[key].unshift(data);toast(schema.title+' berhasil ditambahkan.');closeModal('crudModal');if(window.__afterSave)await window.__afterSave(type,data,docFile,photoFiles);if(window.offerGenerate&&DOC_TYPES.indexOf(type)>=0)window.offerGenerate(type,0);
     }else{
       const existingId=db[key][index].id;
-      const {data,error}=await sbClient.from(table).update(obj).eq('id',existingId).select().single();
+      const {data,error}=await sbClient.from(table).update(window.__clean(obj,table)).eq('id',existingId).select().single();
       if(error){toast('Gagal memperbarui: '+error.message);return;}
       db[key][index]=data;if(oldDoc&&data.file_path!==oldDoc)sbClient.storage.from(DOC_BUCKET).remove([oldDoc]);toast(schema.title+' berhasil diperbarui.');closeModal('crudModal');if(window.__afterSave)await window.__afterSave(type,data,docFile,photoFiles);
     }
@@ -1389,7 +1438,7 @@ restoreSession();
     const vt2=document.getElementById('violationTable');if(vt2)vt2.innerHTML=db.violations.map((v,i)=>`<tr><td>${date(v.date)}</td><td>${esc(v.type)}</td><td>${esc(v.location)}</td><td>${esc(v.action)}</td><td>${badge(v.status)}</td><td>${actions('violation',i)}</td></tr>`).join('')||empty(6);
     const ft=document.getElementById('followupTable');if(ft)ft.innerHTML=db.followups.map((v,i)=>`<tr><td>${esc(v.finding)}</td><td>${esc(v.pic)}</td><td>${esc(v.agency)}</td><td>${date(v.deadline)}</td><td>${badge(v.status)}</td><td>${esc(v.note)}</td><td>${actions('followup',i)}</td></tr>`).join('')||empty(7);
     const st=document.getElementById('sptTable');if(st)st.innerHTML=db.spt.map((v,i)=>`<tr><td>${esc(v.no)}</td><td>${esc(v.activity)}</td><td>${date(v.date)}</td><td>${esc(v.location)}</td><td>${esc(v.pic)}</td><td>${badge(v.status)}</td><td>${docCell(v)}</td><td>${actions('spt',i,`<button class="btn" onclick="openGenerate('spt',${i})">Buat Dokumen</button>`)}</td></tr>`).join('')||empty(8);
-    const rt=document.getElementById('reportTable');if(rt)rt.innerHTML=db.reports.map((v,i)=>`<tr><td>${esc(v.no)}</td><td>${esc(v.activity)}</td><td>${date(v.date)}</td><td>${esc(v.person)}</td><td>${badge(v.status)}</td><td>${docCell(v)}</td><td>${actions('report',i,`<button class="btn" onclick="openGenerate('report',${i})">Buat Dokumen</button>`)}</td></tr>`).join('')||empty(7);
+    const rt=document.getElementById('reportTable');if(rt)rt.innerHTML=db.reports.map((v,i)=>`<tr><td>${esc(v.no)}</td><td>${esc(v.activity)}</td><td>${date(v.date)}</td><td>${esc(window.ppFmt?window.ppFmt(v.person):v.person)}</td><td>${badge(v.status)}</td><td>${docCell(v)}</td><td>${actions('report',i,`<button class="btn" onclick="openGenerate('report',${i})">Buat Dokumen</button>`)}</td></tr>`).join('')||empty(7);
     renderArchives();
     renderPhotos();
   }
@@ -1635,7 +1684,7 @@ function buildData(type,rec){
   var d=db(),a=acts().find(function(x){return String(x.name||'').trim().toLowerCase()===String(rec.activity||'').trim().toLowerCase()})||{};
   var date=rec.date||a.date||'',st=a.start_time||'',en=a.end_time||'';
   var set=document.querySelector('#pengaturan input'),setAddr=document.querySelectorAll('#pengaturan input')[2];
-  var pic=type==='spt'?rec.pic:rec.person;
+  var pic=type==='spt'?rec.pic:(a.pic||String(rec.person||'').split(';')[0].trim());
   var data={
     nomor:rec.no,kegiatan:rec.activity,tanggal:fmtDate(date,{day:'numeric',month:'long',year:'numeric'}),
     tanggal_singkat:fmtDate(date,{day:'2-digit',month:'2-digit',year:'numeric'}),hari:fmtDate(date,{weekday:'long'}),tahun:String(date).slice(0,4),
@@ -1645,12 +1694,14 @@ function buildData(type,rec){
     penanggung_jawab:pic||a.pic,status:rec.status,
     instansi:set?set.value:'Satuan Polisi Pamong Praja',alamat_instansi:setAddr?setAddr.value:'',
     tanggal_cetak:new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}),
-    petugas:rec.person||a.pic,hasil:rec.result,temuan:rec.finding,tindakan:rec.action,keterangan:rec.note
+    petugas:String(type==='spt'?(rec.team||rec.person||''):(rec.person||'')).split(';').map(function(x){return x.trim()}).filter(Boolean).join(', ')||a.pic,hasil:rec.result,temuan:rec.finding,tindakan:rec.action,keterangan:rec.note
   };
   Object.keys(data).forEach(function(k){if(data[k]==null)data[k]=''});
   /* daftar personel: dari menu Penugasan; jika kosong pakai penanggung jawab */
   var people=d.personnel||[],byName={};people.forEach(function(p){byName[String(p.name||'').trim().toLowerCase()]=p});
-  var names=(d.assignments||[]).filter(function(x){return String(x.activity||'').trim().toLowerCase()===String(rec.activity||'').trim().toLowerCase()}).map(function(x){return {name:x.person,role:x.role}});
+  var picked=String(type==='spt'?(rec.team||''):(rec.person||'')).split(';').map(function(x){return x.trim()}).filter(Boolean);
+  var asg=(d.assignments||[]),roleOf=function(n){var m=asg.find(function(x){return String(x.person||'').trim().toLowerCase()===String(n).trim().toLowerCase()&&String(x.activity||'').trim().toLowerCase()===String(rec.activity||'').trim().toLowerCase()});return m?m.role:'Petugas'};
+  var names=picked.length?picked.map(function(n){return {name:n,role:roleOf(n)}}):(d.assignments||[]).filter(function(x){return String(x.activity||'').trim().toLowerCase()===String(rec.activity||'').trim().toLowerCase()}).map(function(x){return {name:x.person,role:x.role}});
   if(!names.length&&(pic||a.pic))names=[{name:pic||a.pic,role:'Penanggung jawab'}];
   var list=names.map(function(n,i){var p=byName[String(n.name||'').trim().toLowerCase()]||{};return {no:String(i+1),nama:n.name||'',nip:p.nip||'',jabatan:p.position||'',unit:p.unit||'',peran:n.role||''}});
   data.jumlah_personel=String(list.length);
@@ -2122,6 +2173,84 @@ render();
  if(btn)btn.addEventListener('pointerdown',function(e){var r=btn.getBoundingClientRect(),s=Math.max(r.width,r.height),d=document.createElement('span');d.className='lg-rip';d.style.cssText='width:'+s+'px;height:'+s+'px;left:'+(e.clientX-r.left-s/2)+'px;top:'+(e.clientY-r.top-s/2)+'px';btn.appendChild(d);setTimeout(function(){d.remove()},650)});
  var orig=window.login;
  if(typeof orig==='function')window.login=async function(){if(btn){btn.classList.add('busy')}try{return await orig.apply(this,arguments)}finally{if(btn)btn.classList.remove('busy')}};
+})();
+
+</script>
+<script>
+/* ===== pemilih petugas dari Data Personel ===== */
+(function(){
+ function D(){return window.__db||{}}
+ function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+ function init2(n){var p=String(n).replace(/^(drs?|ir|h|hj)\.?\s+/i,'').trim().split(/\s+/);return ((p[0]||'?')[0]+((p[1]||'')[0]||'')).toUpperCase()}
+ function parse(v){return String(v||'').split(';').map(function(x){return x.trim()}).filter(Boolean)}
+ window.ppParse=parse;
+ window.ppFmt=function(v){return parse(v).join(', ')||''};
+ window.__clean=function(o,t){if(t==='spt'&&window.__noTeam){o=Object.assign({},o);delete o.team}return o};
+ window.ppField=function(key,label,multi,req,val){
+  if(key==='team'&&window.__noTeam)return '<div class="field full"><label>'+esc(label)+'</label><div class="pp-note">Daftar petugas untuk SPT belum aktif. Jalankan file <b>supabase_tambah_petugas.sql</b> di Supabase SQL Editor, lalu muat ulang aplikasi. <input type="hidden" id="crud_team" value=""></div></div>';
+  return '<div class="field '+(multi?'full ':'')+'pp" id="pp_'+key+'" data-multi="'+(multi?1:0)+'"><label>'+esc(label)+(req?' <em>*</em>':'')+'</label>'+
+   '<input type="hidden" id="crud_'+key+'" value="'+esc(val||'')+'">'+
+   '<div class="pp-box"><span class="pp-chips"></span><input class="pp-q" type="text" autocomplete="off" placeholder="'+(multi?'Cari nama lalu pilih petugas…':'Cari dan pilih personel…')+'"></div>'+
+   '<div class="pp-pop" hidden><div class="pp-tools"><span class="pp-count"></span>'+(multi?'<button type="button" data-a="all">Pilih semua</button><button type="button" data-a="none">Kosongkan</button>':'')+'<button type="button" data-a="close">Tutup</button></div><div class="pp-list"></div></div>'+
+   '<small class="pp-hint"></small></div>';
+ };
+ function setup(root){
+  var people=(D().personnel||[]).filter(function(p){return p&&p.name});
+  root.setAttribute('data-ready','1');
+  var multi=root.getAttribute('data-multi')==='1',hid=root.querySelector('input[type=hidden]'),q=root.querySelector('.pp-q'),box=root.querySelector('.pp-box'),
+      chips=root.querySelector('.pp-chips'),pop=root.querySelector('.pp-pop'),list=root.querySelector('.pp-list'),cnt=root.querySelector('.pp-count'),hint=root.querySelector('.pp-hint'),hl=0,view=[];
+  function sel(){return parse(hid.value)}
+  function save(a){hid.value=a.join('; ');hid.dispatchEvent(new Event('change',{bubbles:true}));draw()}
+  function find(n){var k=String(n).trim().toLowerCase();return people.find(function(p){return String(p.name).trim().toLowerCase()===k})}
+  function drawChips(){var s=sel();chips.innerHTML=s.map(function(n,i){var known=find(n);return '<span class="pp-chip'+(known?'':' warn')+'" '+(known?'':'title="Nama ini tidak ada di Data Personel"')+'><span class="av">'+esc(init2(n))+'</span>'+esc(n)+'<button type="button" data-i="'+i+'" aria-label="Hapus">&times;</button></span>'}).join('');
+   if(!multi)q.placeholder=s.length?'Ganti personel…':'Cari dan pilih personel…';
+   cnt.textContent=multi?(s.length?s.length+' petugas dipilih':'Belum ada yang dipilih'):'Pilih satu personel';
+   hint.textContent=people.length?'':'Belum ada data. Tambahkan dulu di menu Data Personel.'}
+  function drawList(){var s=sel().map(function(x){return x.toLowerCase()}),t=q.value.trim().toLowerCase();
+   view=people.filter(function(p){return !t||[p.name,p.position,p.unit,p.nip].join(' ').toLowerCase().indexOf(t)>=0});
+   if(hl>=view.length)hl=Math.max(0,view.length-1);
+   list.innerHTML=view.length?view.map(function(p,i){var on=s.indexOf(String(p.name).trim().toLowerCase())>=0,off=p.status==='Nonaktif';
+    return '<div class="pp-row'+(on?' on':'')+(off?' off':'')+(i===hl?' hl':'')+'" data-i="'+i+'"><span class="av">'+esc(init2(p.name))+'</span><span class="tx"><b>'+esc(p.name)+'</b><small>'+esc([p.position,p.unit].filter(Boolean).join(' · ')||'—')+(p.nip?' · '+esc(p.nip):'')+'</small></span>'+(p.status&&p.status!=='Aktif'?'<span class="st">'+esc(p.status)+'</span>':'')+'<span class="ck"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></span></div>'}).join(''):'<div class="pp-empty">'+(people.length?'Tidak ada personel yang cocok.':'Belum ada data personel.')+'</div>'}
+  function draw(){drawChips();drawList()}
+  function open(){root.classList.add('open');pop.hidden=false;drawList()}
+  function close(){root.classList.remove('open');pop.hidden=true}
+  function pick(p){if(!p||p.status==='Nonaktif')return;var s=sel(),k=String(p.name).trim(),i=s.findIndex(function(x){return x.toLowerCase()===k.toLowerCase()});
+   if(multi){if(i>=0)s.splice(i,1);else s.push(k);save(s);q.focus()}else{save([k]);q.value='';close()}}
+  box.addEventListener('mousedown',function(e){if(e.target.closest('.pp-chip button'))return;open();if(e.target!==q){e.preventDefault();q.focus()}});
+  chips.addEventListener('click',function(e){var b=e.target.closest('button[data-i]');if(!b)return;var s=sel();s.splice(+b.getAttribute('data-i'),1);save(s)});
+  q.addEventListener('focus',open);q.addEventListener('input',function(){hl=0;open()});
+  q.addEventListener('keydown',function(e){
+   if(e.key==='ArrowDown'){e.preventDefault();open();hl=Math.min(hl+1,view.length-1);drawList()}
+   else if(e.key==='ArrowUp'){e.preventDefault();hl=Math.max(hl-1,0);drawList()}
+   else if(e.key==='Enter'){e.preventDefault();if(pop.hidden)open();else pick(view[hl])}
+   else if(e.key==='Escape'){e.stopPropagation();close()}
+   else if(e.key==='Backspace'&&!q.value){var s=sel();if(s.length){s.pop();save(s)}}});
+  list.addEventListener('mousedown',function(e){e.preventDefault()});
+  list.addEventListener('click',function(e){var r=e.target.closest('.pp-row');if(r)pick(view[+r.getAttribute('data-i')])});
+  pop.querySelector('.pp-tools').addEventListener('click',function(e){var a=e.target.getAttribute&&e.target.getAttribute('data-a');if(!a)return;
+   if(a==='all')save(people.filter(function(p){return p.status!=='Nonaktif'}).map(function(p){return String(p.name).trim()}));
+   else if(a==='none')save([]);else close()});
+  document.addEventListener('mousedown',function h(e){if(!document.body.contains(root)){document.removeEventListener('mousedown',h);return}if(!root.contains(e.target))close()});
+  root._pp={draw:draw};draw();
+ }
+ window.ppInit=function(form){
+  form=form||document;var roots=form.querySelectorAll('.pp:not([data-ready])');roots.forEach(setup);
+  var act=document.getElementById('crud_activity');
+  if(act&&!act._ppBound){act._ppBound=1;
+   act.addEventListener('change',function(){setTimeout(function(){
+    var name=String(act.value||'').trim().toLowerCase(),D2=D();if(!name)return;
+    var asg=(D2.assignments||[]).filter(function(x){return String(x.activity||'').trim().toLowerCase()===name}).map(function(x){return x.person}).filter(Boolean);
+    document.querySelectorAll('.pp').forEach(function(r){var h=r.querySelector('input[type=hidden]');
+     var k=r.id.replace('pp_','');
+     if(r.getAttribute('data-multi')==='1'&&!h.value&&asg.length){h.value=asg.join('; ')}
+     if(r._pp)r._pp.draw()})
+   },0)})}
+ };
+ /* cek kolom team pada tabel SPT */
+ function probe(){var c=window.sbClient;if(!c||window.__probed)return;window.__probed=1;
+  try{c.from('spt').select('team').limit(1).then(function(r){if(r&&r.error&&/team/i.test(r.error.message||''))window.__noTeam=true}).catch(function(){})}catch(e){}}
+ var sa=window.showApp;if(typeof sa==='function')window.showApp=function(){var r=sa.apply(this,arguments);setTimeout(probe,300);return r};
+ setTimeout(probe,2500);
 })();
 
 </script>
