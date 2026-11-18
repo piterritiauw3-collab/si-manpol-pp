@@ -839,6 +839,31 @@ position:relative;min-height:100vh;display:grid;grid-template-columns:minmax(0,1
 @keyframes skpSp{to{transform:rotate(360deg)}}
 
 </style>
+<style>
+/* ===== Laporan dari WhatsApp ===== */
+.wa-box{width:min(1180px,100%)!important;max-height:94vh;overflow:auto}
+.wa-hint{margin:0 0 10px;font-size:13px;color:var(--muted);line-height:1.55}
+.wa-s1 textarea{width:100%;min-height:360px;padding:14px;border-radius:12px;background:var(--card);color:var(--text);border:1px solid var(--border);font:inherit;font-size:14px;line-height:1.6;resize:vertical}
+.wa-file{display:flex;align-items:center;justify-content:center;margin-top:10px;padding:14px;border:1px dashed var(--border);border-radius:12px;cursor:pointer;color:var(--muted);font-size:13.5px}
+.wa-file:hover{border-color:#8b5cf6;color:var(--text)}
+.wa-grid{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:20px;align-items:start}
+.wa-form .field{margin-bottom:12px}.wa-form label,.wa-form summary{font-size:13px;font-weight:600;color:var(--text);cursor:pointer}
+.wa-form label small{font-weight:400;color:var(--muted)}
+.wa-form input{width:100%;margin-top:6px;height:40px;min-height:40px;padding:0 11px;border-radius:10px;background:var(--card);color:var(--text);border:1px solid var(--border);font:inherit;font-size:13.5px}
+.wa-form input:focus{outline:0;border-color:#8b5cf6;box-shadow:0 0 0 3px rgba(139,92,246,.2)}
+.wa-form small{display:block;margin-top:5px;font-size:12px;color:var(--muted)}
+.wa-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.wa-chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.wa-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 6px 4px 11px;border-radius:999px;background:rgba(139,92,246,.16);font-size:12.5px;color:var(--text)}
+.wa-chip.warn{background:rgba(245,158,11,.18);color:#fbbf24}
+.wa-chip button{all:unset;cursor:pointer;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:14px;line-height:1}
+.wa-chip button:hover{background:rgba(239,68,68,.35);color:#fff}
+.wa-link{all:unset;cursor:pointer;color:#a78bfa;text-decoration:underline;text-underline-offset:3px}
+.wa-prev{max-height:76vh;overflow:auto;padding:4px;border-radius:12px;background:rgba(0,0,0,.18)}
+.wa-prev .wa-paper{width:100%;max-width:794px;margin:0 auto;min-height:600px;box-sizing:border-box}
+@media(max-width:860px){.wa-grid{grid-template-columns:1fr}.wa-prev{max-height:none}.wa-paper{padding:20px 18px}}
+
+</style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
 <style>
 /* ===== Lapisan tipografi: Archivo (judul & angka) + Public Sans (isi) ===== */
@@ -981,7 +1006,7 @@ a{text-underline-offset:3px}
 </section>
 
 <section id="laporan" class="page">
-  <div class="page-head"><div><h1>Laporan Kegiatan</h1><p>Alur petugas → operator → pimpinan → arsip final.</p></div><div class="head-actions"><button class="btn" onclick="openUploadDoc('report')"><svg class="i" aria-hidden="true"><use href="#i-upload"/></svg>Upload Laporan</button><button class="btn primary" onclick="openModal('reportModal')"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Buat Laporan</button></div></div>
+  <div class="page-head"><div><h1>Laporan Kegiatan</h1><p>Alur petugas → operator → pimpinan → arsip final.</p></div><div class="head-actions"><button class="btn" onclick="window.__waOpen&&window.__waOpen()"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg>Dari Pesan WhatsApp</button><button class="btn" onclick="openUploadDoc('report')"><svg class="i" aria-hidden="true"><use href="#i-upload"/></svg>Upload Laporan</button><button class="btn primary" onclick="openModal('reportModal')"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Buat Laporan</button></div></div>
   <div class="card"><table class="table"><thead><tr><th>No. Laporan</th><th>Kegiatan</th><th>Tanggal</th><th>Petugas</th><th>Status</th><th>Dokumen</th><th>Aksi</th></tr></thead><tbody id="reportTable"></tbody></table></div>
 </section>
 
@@ -2992,6 +3017,389 @@ var sp=window.showPage;if(typeof sp==='function')window.showPage=function(id){va
 var sa=window.showApp;if(typeof sa==='function')window.showApp=function(){S.loaded=false;S.profile=null;S.rhk=[];S.items=[];return sa.apply(this,arguments)};
 var uu=window.updateDashboard;if(typeof uu==='function'){var tm;window.updateDashboard=function(){var r=uu.apply(this,arguments);var s=$('skp');if(s&&s.classList.contains('active')&&S.loaded&&!S.missing){clearTimeout(tm);tm=setTimeout(render,250)}return r}}
 window.__skp={state:S,render:render,load:load};
+})();
+
+</script>
+<script>
+/* ===== Laporan dari pesan WhatsApp → dokumen resmi (.docx / PDF) ===== */
+(function(){
+'use strict';
+function $(i){return document.getElementById(i)}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]})}
+function db(){return window.__db||{}}
+function toastW(m,t){if(typeof toast==='function')toast(m,t)}
+var MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+var ROMAN=['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX'];
+var ACR=['BBM','SPBU','SPT','PKL','TNI','POLRI','NTT','ASN','APBD','SOP','RHK','SKP','PP','KTP','KK','OPD','UMKM','LP','DPRD'];
+var SMALL=['dan','di','pada','dengan','yang','untuk','atas','dari','ke','serta','atau','oleh','dalam','tentang'];
+var GELAR=['sh','spd','ssos','mh','se','skm','am','amd','drs','dra','dr','ir','mm','msi','sip','st','skom','sag','spt','mpd','mt','ak','kom','sstp','mpa','map','sh mh','s','h','hj','haji'];
+
+/* ---------- utilitas teks ---------- */
+function clean(s){return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
+function fixAbbr(s){return s.replace(/\byg\b/gi,'yang').replace(/\bdgn\b/gi,'dengan').replace(/\butk\b/gi,'untuk').replace(/\btdk\b/gi,'tidak')}
+function tidy(s){
+  s=fixAbbr(String(s||'').replace(/\s+/g,' ').trim()).replace(/\s+([,.;:])/g,'$1').replace(/([,;:])(?=\S)/g,function(m,c,i,str){return /\d/.test(str[i-1]||'')&&/\d/.test(str[i+1]||'')?c:c+' '}).replace(/\s{2,}/g,' ');
+  return s.charAt(0).toUpperCase()+s.slice(1);
+}
+function smartTitle(s){
+  s=String(s||'').trim();if(!s)return s;
+  var up=s===s.toUpperCase();
+  return s.split(/\s+/).map(function(w,i){
+    var core=w.replace(/[^A-Za-z]/g,'');
+    if(ACR.indexOf(core.toUpperCase())>=0)return w.toUpperCase();
+    if(!up&&w!==w.toLowerCase()&&w!==w.toUpperCase())return w;      /* sudah campuran huruf: biarkan */
+    if(!up&&w===w.toUpperCase()&&core.length>1)return w;
+    var l=w.toLowerCase();
+    if(i>0&&SMALL.indexOf(l)>=0)return l;
+    return l.charAt(0).toUpperCase()+l.slice(1);
+  }).join(' ');
+}
+function fmtNip(d){d=String(d||'').replace(/\D/g,'');return d.length===18?d.slice(0,8)+' '+d.slice(8,14)+' '+d.slice(14,15)+' '+d.slice(15):d}
+function dateID(iso){var m=String(iso||'').match(/^(\d{4})-(\d{2})-(\d{2})/);return m?(+m[3])+' '+MONTHS[+m[2]-1]+' '+m[1]:''}
+function parseDate(s){
+  var m=String(s||'').match(/(\d{1,2})\s+(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)\s+(\d{4})/i);
+  if(m)return m[3]+'-'+('0'+(MONTHS.map(function(x){return x.toLowerCase()}).indexOf(m[2].toLowerCase())+1)).slice(-2)+'-'+('0'+m[1]).slice(-2);
+  m=String(s||'').match(/(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);
+  if(m)return m[3]+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2);
+  return '';
+}
+var RE_DATE_LINE=/^\s*([A-Za-zÀ-ÿ .]{3,30}),\s*(\d{1,2}\s+(?:januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)\s+\d{4})\s*\.?\s*$/i;
+var RE_HEAD=/^\s*([IVXLivxl]{1,6})\s*[\.\),:]\s*(\S.{0,90})$/;
+var KV_KEYS=/^(hari\/tanggal|hari|tanggal|pukul|waktu|jam|tempat|lokasi|sasaran|nomor|perihal|lampiran|dasar)$/i;
+
+/* ---------- pembaca laporan ---------- */
+function parse(raw){
+  var L=String(raw||'').replace(/\r/g,'').replace(/ /g,' ').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu,'')
+    .split('\n').map(function(l){return l.replace(/\s+$/,'').replace(/^\s*#{1,6}\s*/,'').replace(/\*([^*\n]+)\*/g,'$1').replace(/^\s*[•●▪◦]\s*/,'- ')});
+  /* tanda tangan: baris "Tempat, tanggal" terakhir */
+  var sigIdx=-1;for(var i=L.length-1;i>=0;i--){if(RE_DATE_LINE.test(L[i])){sigIdx=i;break}}
+  var sig={tempat:'Lewoleba',tanggal:'',jabatan:'',nama:'',nip:''};
+  if(sigIdx>=0){
+    var m=L[sigIdx].match(RE_DATE_LINE);sig.tempat=smartTitle(m[1].trim());sig.tanggal=parseDate(m[2]);
+    var rest=L.slice(sigIdx+1).map(function(x){return x.trim()}).filter(function(x){return x&&!/^(ttd\.?|tanda tangan|ttd tanda tangan)$/i.test(x)});
+    var ni=rest.findIndex(function(x){return /^nip\b/i.test(x)});
+    if(ni>=0){sig.nip=fmtNip((rest[ni].match(/[\d .]{10,}/)||[''])[0]);rest.splice(ni,1)}
+    if(rest.length){sig.nama=rest[rest.length-1];rest=rest.slice(0,-1)}
+    sig.jabatan=smartTitle(rest.join(' ').replace(/^(\w+),\s*/,'$1 ').replace(/[.,]+$/,'').trim());
+    if(sig.nama){var p=sig.nama.split(',');p[0]=p[0].toUpperCase();sig.nama=p.join(',').replace(/,\s*$/,'')}
+    L=L.slice(0,sigIdx);
+  }
+  /* bagian bernomor romawi */
+  var heads=[];L.forEach(function(l,i){var m=l.match(RE_HEAD);if(m&&!/^\d/.test(l.trim())&&(m[2].split(/\s+/).length<=9))heads.push({i:i,title:m[2]})});
+  var pre=L.slice(0,heads.length?heads[0].i:L.length),title=[],kepada=[],oleh='',mode='title';
+  pre.forEach(function(l){
+    var t=l.trim();
+    if(/^kepada\b/i.test(t)){mode='kepada';var r=t.replace(/^kepada\s*yth\.?:?/i,'').trim();if(r)kepada.push(r);return}
+    if(/^oleh\b/i.test(t)){mode='oleh';var r2=t.replace(/^oleh:?/i,'').trim();if(r2)oleh=r2;return}
+    if(!t){if(mode==='title'&&title.length)mode='gap';return}
+    if(mode==='title')title.push(t);else if(mode==='kepada')kepada.push(t);else if(mode==='oleh')oleh=oleh?oleh+' '+t:t;else if(mode==='gap'){title.push(t);mode='title'}
+  });
+  var secs=heads.map(function(h,k){
+    var end=k+1<heads.length?heads[k+1].i:L.length;
+    return {title:fixAbbr(h.title.replace(/[:.]+$/,'').trim()).toUpperCase(),blocks:blocks(L.slice(h.i+1,end))};
+  });
+  var all=L.join('\n'),meta={date:'',loc:'',jam:'',petugas:[]};
+  secs.forEach(function(s){s.blocks.forEach(function(b){if(b.t==='kv')b.rows.forEach(function(r){
+    var k=r[0].toLowerCase();
+    if(/^(hari|tanggal|hari\/tanggal)$/.test(k)&&!meta.date)meta.date=parseDate(r[1]);
+    if(/^(tempat|lokasi)$/.test(k)&&!meta.loc)meta.loc=r[1];
+    if(/^(pukul|waktu|jam)$/.test(k)&&!meta.jam)meta.jam=r[1];
+  })})});
+  if(!meta.date)meta.date=parseDate(all)||sig.tanggal;
+  function grab(s){
+    var out=[];
+    function ok(n){return n&&n.length<=60&&n.split(/\s+/).length<=7&&!/[:;]$/.test(n)}
+    s.blocks.forEach(function(b){if(b.t==='ol'||b.t==='ul')b.items.forEach(function(x){var n=x.replace(/[,;.\s]+$/,'').trim();if(ok(n))out.push(n)})});
+    if(!out.length)s.blocks.forEach(function(b){if(b.t==='p'){var n=b.text.replace(/[,;.\s]+$/,'');if(ok(n))out.push(n)}});
+    return out;
+  }
+  [/personil|personel|pelaksana|anggota|bertugas|susunan tim|\btim\b/i,/(daftar|nama)\s+petugas/i].forEach(function(re){
+    if(meta.petugas.length)return;
+    secs.forEach(function(s){if(!meta.petugas.length&&re.test(s.title)&&!/^(tindakan|hasil|kendala|saran)/i.test(s.title))meta.petugas=grab(s)});
+  });
+  var ttl=title.join(' ').trim()||'LAPORAN KEGIATAN';
+  if(!sig.tanggal)sig.tanggal=meta.date;
+  return {title:ttl.toUpperCase(),kepada:kepada.length?kepada:['Kepala Satuan Polisi Pamong Praja Kabupaten Lembata','di Lewoleba'],oleh:oleh||'SATUAN POLISI PAMONG PRAJA KABUPATEN LEMBATA',sections:secs,sig:sig,meta:meta,
+    activity:smartTitle(ttl.replace(/^laporan\s+(hasil\s+|kegiatan\s+)?/i,'').trim())||'Kegiatan'};
+}
+function blocks(lines){
+  var out=[],buf=null;
+  function flush(){buf=null}
+  lines.forEach(function(l){
+    var t=l.replace(/\s+/g,' ').trim();
+    if(!t){flush();return}
+    var m;
+    if((m=t.match(/^(\d{1,2})\s*[\.\)]\s*(.+)$/))){var last=out[out.length-1];if(last&&last.t==='ol'&&buf==='ol')last.items.push(tidy(m[2]));else{out.push({t:'ol',items:[tidy(m[2])]});buf='ol'}return}
+    if((m=t.match(/^[-–—*]\s+(.+)$/))){var l2=out[out.length-1];if(l2&&l2.t==='ul'&&buf==='ul')l2.items.push(tidy(m[1]));else{out.push({t:'ul',items:[tidy(m[1])]});buf='ul'}return}
+    if((m=t.match(/^([A-Za-z\/ ]{2,20}?)\s*[:：]\s*(.+)$/))&&KV_KEYS.test(m[1].trim())){
+      var key=m[1].trim();key=key.charAt(0).toUpperCase()+key.slice(1).toLowerCase();var v=fixAbbr(m[2].trim());
+      var l3=out[out.length-1];if(l3&&l3.t==='kv'&&buf==='kv')l3.rows.push([key,v]);else{out.push({t:'kv',rows:[[key,v]]});buf='kv'}return}
+    if(/^[A-Za-z\/ ]{2,20}[:：]$/.test(t)){out.push({t:'sub',text:tidy(t.replace(/[:：]$/,''))+':'});buf='sub';return}
+    var lp=out[out.length-1];
+    if(lp&&lp.t==='p'&&buf==='p'&&/^[a-z]/.test(t)&&!/[.;:!?]$/.test(lp.text)){lp.text+=' '+fixAbbr(t);return}
+    out.push({t:'p',text:tidy(t)});buf='p';
+  });
+  return out;
+}
+
+/* ---------- pencocokan petugas dengan Data Personel ---------- */
+function coreTokens(n){
+  var s=clean(String(n||'').replace(/\([^)]*\)/g,' ').split(',')[0]);
+  return s.split(' ').filter(function(t){return t&&GELAR.indexOf(t)<0});
+}
+function matchPerson(raw){
+  var nt=coreTokens(raw),best=null,bs=0;
+  (db().personnel||[]).forEach(function(p){
+    var pt=coreTokens(p.name),inter=nt.filter(function(t){return pt.indexOf(t)>=0}).length,sc=inter/Math.max(nt.length,pt.length||1);
+    if(inter>=Math.min(2,nt.length,pt.length)&&sc>bs){bs=sc;best=p}
+  });
+  return bs>=0.66?best:null;
+}
+function plainName(raw){return String(raw||'').replace(/\([^)]*\)/g,' ').split(',')[0].replace(/\s+/g,' ').trim()}
+
+/* ---------- logo kop & foto ---------- */
+function logoOf(v){try{var m=getComputedStyle(document.documentElement).getPropertyValue(v).match(/url\(["']?(data:[^"')]+)["']?\)/);return m?m[1]:''}catch(e){return ''}}
+function dataToU8(u){var b=atob(u.split(',')[1]),a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a}
+function imgSize(u){return new Promise(function(res){var i=new Image();i.onload=function(){res([i.naturalWidth,i.naturalHeight])};i.onerror=function(){res([1,1])};i.src=u})}
+async function prepPhoto(file){
+  var bmp=null;
+  try{bmp=await createImageBitmap(file,{imageOrientation:'from-image'})}catch(e){}
+  if(!bmp){var u=URL.createObjectURL(file);bmp=await new Promise(function(res,rej){var i=new Image();i.onload=function(){res(i)};i.onerror=rej;i.src=u})}
+  var w=bmp.width||bmp.naturalWidth,h=bmp.height||bmp.naturalHeight,k=Math.min(1,1280/Math.max(w,h)),cv=document.createElement('canvas');
+  cv.width=Math.round(w*k);cv.height=Math.round(h*k);cv.getContext('2d').drawImage(bmp,0,0,cv.width,cv.height);
+  var url=cv.toDataURL('image/jpeg',.82);return {url:url,w:cv.width,h:cv.height,name:file.name};
+}
+
+/* ---------- tampilan kertas (pratinjau & PDF) ---------- */
+var KOP={l1:'PEMERINTAH KABUPATEN LEMBATA',l2:'SATUAN POLISI PAMONG PRAJA',a1:'Jl. Trans Lembata No. – Lewoleba, Lembata, Nusa Tenggara Timur',a2:'Telepon (0383) 2343249',a3:'Laman www.site.lembatakab.go.id  Pos-el: satpolpplbt@gmail.com'};
+function sections(M){
+  var s=M.sections.slice();
+  if(M.photos&&M.photos.length)s.push({title:'DOKUMENTASI KEGIATAN',blocks:[],photos:true});
+  return s.map(function(x,i){x.no=ROMAN[i]||String(i+1);return x});
+}
+function toHtml(M){
+  var pemda=logoOf('--logo2'),pp=logoOf('--logo'),h='';
+  h+='<div class="wa-kop"><img src="'+pemda+'" alt=""><div><div style="font:12pt Arial,sans-serif">'+KOP.l1+'</div><div style="font:bold 15pt Arial,sans-serif">'+KOP.l2+'</div><div style="font:9.5pt Arial,sans-serif">'+KOP.a1+'</div><div style="font:9.5pt Arial,sans-serif">'+KOP.a2+'</div><div style="font:9.5pt Arial,sans-serif">'+KOP.a3+'</div></div><img src="'+pp+'" alt=""></div><div class="wa-rule"></div>';
+  h+='<div class="wa-title">'+esc(M.title)+'</div>';
+  h+='<p class="wa-l">Kepada Yth:</p>'+M.kepada.map(function(k){return '<p class="wa-l">'+esc(k)+'</p>'}).join('')+'<p class="wa-l" style="margin-top:12px">Oleh:</p><p class="wa-l">'+esc(M.oleh)+'</p>';
+  var allS=sections(M),photoSec=allS.filter(function(x){return x.photos})[0];
+  allS.filter(function(x){return !x.photos}).forEach(function(s){
+    h+='<div class="wa-h">'+s.no+'. '+esc(s.title)+'</div>';
+    s.blocks.forEach(function(b){
+      if(b.t==='p')h+='<p class="wa-p">'+esc(b.text)+'</p>';
+      else if(b.t==='sub')h+='<p class="wa-l" style="margin-left:14px">'+esc(b.text)+'</p>';
+      else if(b.t==='ol'||b.t==='ul')h+='<'+b.t+' class="wa-li">'+b.items.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</'+b.t+'>';
+      else if(b.t==='kv')h+='<table class="wa-kv">'+b.rows.map(function(r){return '<tr><td>'+esc(r[0])+'</td><td>:</td><td>'+esc(r[1])+'</td></tr>'}).join('')+'</table>';
+    });
+  });
+  var S=M.sig,K=M.mengetahui&&(M.mengetahui.nama||M.mengetahui.jabatan)?M.mengetahui:null;
+  function blk(jab,nama,nip){return '<div>'+esc(jab||'')+'</div><div class="wa-gap"></div><div><u><b>'+esc(nama||'')+'</b></u></div>'+(nip?'<div>NIP. '+esc(nip)+'</div>':'')}
+  h+='<div class="wa-sig">'+(K?'<div>'+blk(S.jabatan||'Yang Melaksanakan Tugas',S.nama,S.nip)+'</div><div><div style="text-align:center">'+esc((S.tempat||'')+', '+dateID(S.tanggal))+'</div>'+'<div>Mengetahui</div>'+blk(K.jabatan,K.nama,K.nip)+'</div>'
+     :'<div></div><div><div>'+esc((S.tempat||'')+', '+dateID(S.tanggal))+'</div>'+blk(S.jabatan,S.nama,S.nip)+'</div>')+'</div>';
+  if(photoSec)h+='<div class="wa-h" style="margin-top:28px;break-before:page">'+photoSec.no+'. '+esc(photoSec.title)+'</div><div class="wa-ph">'+M.photos.map(function(p){return '<img src="'+p.url+'" alt="">'}).join('')+'</div>';
+  return h;
+}
+var PAPER_CSS='.wa-paper{background:#fff;color:#000;font:12pt/1.45 "Times New Roman",Times,serif;padding:34px 44px;box-shadow:0 8px 30px rgba(0,0,0,.35);text-align:justify}'+
+ '.wa-paper .wa-kop{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:center}.wa-paper .wa-kop img{width:74px;height:74px;object-fit:contain}.wa-paper .wa-kop>div{flex:1}'+
+ '.wa-paper .wa-rule{border-top:3px solid #000;border-bottom:1px solid #000;height:3px;margin:6px 0 14px}'+
+ '.wa-paper .wa-title{text-align:center;font-weight:700;margin:4px 0 18px;line-height:1.35}'+
+ '.wa-paper .wa-l{margin:0;text-align:left}.wa-paper .wa-h{font-weight:700;margin:16px 0 4px;text-align:left}'+
+ '.wa-paper .wa-p{margin:0 0 6px 14px;text-indent:24px}.wa-paper .wa-li{margin:0 0 6px;padding-left:44px}.wa-paper .wa-li li{margin:0 0 2px}'+
+ '.wa-paper .wa-kv{margin:0 0 6px 14px;border-collapse:collapse}.wa-paper .wa-kv td{padding:0 6px 0 0;vertical-align:top}.wa-paper .wa-kv td:first-child{width:120px}'+
+ '.wa-paper .wa-ph{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}.wa-paper .wa-ph img{width:100%;height:auto;border:1px solid #999}'+
+ '.wa-paper .wa-sig{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:26px;page-break-inside:avoid}.wa-paper .wa-sig>div>div{text-align:left}.wa-paper .wa-gap{height:64px}'+
+ '.wa-paper .wa-sig>div:last-child>div:first-child{text-align:left}';
+
+/* ---------- penyusun .docx ---------- */
+function X(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function run(t,o){o=o||{};return '<w:r><w:rPr>'+(o.font?'<w:rFonts w:ascii="'+o.font+'" w:hAnsi="'+o.font+'" w:cs="'+o.font+'"/>':'')+(o.b?'<w:b/>':'')+(o.u?'<w:u w:val="single"/>':'')+(o.sz?'<w:sz w:val="'+o.sz+'"/><w:szCs w:val="'+o.sz+'"/>':'')+'</w:rPr><w:t xml:space="preserve">'+X(t)+'</w:t></w:r>'}
+function tab(){return '<w:r><w:tab/></w:r>'}
+function para(inner,o){o=o||{};
+  return '<w:p><w:pPr>'+(o.keep?'<w:keepNext/>':'')+(o.cant?'<w:cantSplit/>':'')+(o.border?'<w:pBdr><w:bottom w:val="thickThinSmallGap" w:sz="24" w:space="1" w:color="000000"/></w:pBdr>':'')+
+   '<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after==null?60:o.after)+'" w:line="'+(o.line||276)+'" w:lineRule="auto"/>'+
+   (o.ind?'<w:ind '+o.ind+'/>':'')+(o.jc?'<w:jc w:val="'+o.jc+'"/>':'')+'</w:pPr>'+inner+'</w:p>'}
+var picId=1;
+function pic(rid,w,h,name){
+  var id=picId++,cx=Math.round(w*360000),cy=Math.round(h*360000);
+  return '<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="'+cx+'" cy="'+cy+'"/><wp:docPr id="'+id+'" name="Gambar '+id+'"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="'+id+'" name="'+X(name)+'"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="'+rid+'"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>'}
+function cell(w,inner,o){o=o||{};return '<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+(o.span?'<w:gridSpan w:val="'+o.span+'"/>':'')+(o.va?'<w:vAlign w:val="'+o.va+'"/>':'')+'</w:tcPr>'+(inner||para('',{}))+'</w:tc>'}
+function tbl(widths,rows){return '<w:tbl><w:tblPr><w:tblW w:w="'+widths.reduce(function(a,b){return a+b},0)+'" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="60" w:type="dxa"/><w:right w:w="60" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>'+widths.map(function(w){return '<w:gridCol w:w="'+w+'"/>'}).join('')+'</w:tblGrid>'+rows.join('')+'</w:tbl>'}
+function row(cells,o){return '<w:tr><w:trPr><w:cantSplit/></w:trPr>'+cells.join('')+'</w:tr>'}
+
+async function buildDocx(M){
+  if(!window.JSZip)throw new Error('Pustaka ZIP belum termuat. Muat ulang halaman.');
+  picId=1;
+  var z=new window.JSZip(),rels=[],media=[],TNR='Times New Roman',W=9355;
+  function addImg(dataUrl){var n=media.length+1,ext=/png/.test(dataUrl.slice(0,20))?'png':'jpeg',rid='rId'+(100+n);media.push({n:n,ext:ext,u8:dataToU8(dataUrl)});rels.push('<Relationship Id="'+rid+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/img'+n+'.'+ext+'"/>');return rid}
+  var body='';
+  /* kop */
+  var rPemda=addImg(logoOf('--logo2')),rPP=addImg(logoOf('--logo'));
+  var mid=para(run(KOP.l1,{font:'Arial',sz:24}),{jc:'center',after:0,line:240})+para(run(KOP.l2,{font:'Arial',sz:30,b:1}),{jc:'center',after:0,line:240})+
+    para(run(KOP.a1,{font:'Arial',sz:19}),{jc:'center',after:0,line:240})+para(run(KOP.a2,{font:'Arial',sz:19}),{jc:'center',after:0,line:240})+para(run(KOP.a3,{font:'Arial',sz:19}),{jc:'center',after:0,line:240});
+  body+=tbl([1500,6355,1500],[row([cell(1500,para(pic(rPemda,2.4,2.4,'Logo Pemda'),{jc:'center',after:0}),{va:'center'}),cell(6355,mid,{va:'center'}),cell(1500,para(pic(rPP,2.4,2.4,'Logo Satpol PP'),{jc:'center',after:0}),{va:'center'})])]);
+  body+=para('',{border:1,after:160,line:120});
+  body+=para(run(M.title,{font:TNR,b:1,sz:24}),{jc:'center',after:240,before:60});
+  body+=para(run('Kepada Yth:',{font:TNR,sz:24}),{after:0})+M.kepada.map(function(k){return para(run(k,{font:TNR,sz:24}),{after:0})}).join('')+para('',{after:0})+para(run('Oleh:',{font:TNR,sz:24}),{after:0})+para(run(M.oleh,{font:TNR,sz:24}),{after:120});
+  var secsAll=sections(M),photoS=secsAll.filter(function(x){return x.photos})[0],secs=secsAll.filter(function(x){return !x.photos});
+  for(var si=0;si<secs.length;si++){
+    var s=secs[si];
+    body+=para(run(s.no+'. '+s.title,{font:TNR,b:1,sz:24}),{keep:1,before:200,after:60});
+    s.blocks.forEach(function(b){
+      if(b.t==='p')body+=para(run(b.text,{font:TNR,sz:24}),{jc:'both',ind:'w:left="360" w:firstLine="567"'});
+      else if(b.t==='sub')body+=para(run(b.text,{font:TNR,sz:24}),{ind:'w:left="360"',keep:1});
+      else if(b.t==='ol'||b.t==='ul')b.items.forEach(function(it,k){body+=para(run((b.t==='ol'?(k+1)+'.':'•'),{font:TNR,sz:24})+tab()+run(it,{font:TNR,sz:24}),{jc:'both',ind:'w:left="720" w:hanging="360"',after:40})});
+      else if(b.t==='kv')b.rows.forEach(function(r){body+=para(run(r[0],{font:TNR,sz:24})+tab()+run(': '+r[1],{font:TNR,sz:24}),{ind:'w:left="2000" w:hanging="1640"',after:20})});
+    });
+  }
+  /* tanda tangan */
+  var S=M.sig,K=M.mengetahui&&(M.mengetahui.nama||M.mengetahui.jabatan)?M.mengetahui:null,dateTxt=(S.tempat||'')+', '+dateID(S.tanggal);
+  function lines(arr,jc){return arr.map(function(t,i){return para(run(t.t,{font:TNR,sz:24,b:t.b,u:t.u}),{jc:jc||'left',after:0,before:t.before||0,keep:1})}).join('')}
+  var half=Math.floor(W/2);
+  body+=para('',{after:240,keep:1});
+  if(K){
+    body+=tbl([half,half],[
+      row([cell(half,para('',{after:0})),cell(half,lines([{t:dateTxt}]))]),
+      row([cell(half,lines([{t:S.jabatan||'Yang Melaksanakan Tugas'}])),cell(half,lines([{t:'Mengetahui'},{t:K.jabatan||''}]))]),
+      row([cell(half,lines([{t:S.nama||'',b:1,u:1,before:1100},{t:S.nip?'NIP. '+S.nip:''}])),cell(half,lines([{t:K.nama||'',b:1,u:1,before:1100},{t:K.nip?'NIP. '+K.nip:''}]))])
+    ]);
+  }else{
+    body+=tbl([half,half],[row([cell(half,para('',{after:0})),cell(half,lines([{t:dateTxt},{t:S.jabatan||''},{t:S.nama||'',b:1,u:1,before:1100},{t:S.nip?'NIP. '+S.nip:''}]))])]);
+  }
+  if(photoS){
+    body+='<w:p><w:r><w:br w:type="page"/></w:r></w:p>'+para(run(photoS.no+'. '+photoS.title,{font:TNR,b:1,sz:24}),{keep:1,after:120});
+    var rowsP=[];
+    for(var pi=0;pi<M.photos.length;pi+=2){
+      var cells=[0,1].map(function(o){
+        var ph=M.photos[pi+o];if(!ph)return cell(Math.floor(W/2),para('',{}));
+        var mw=7.9,mh=6.2,sc=Math.min(mw/ph.w,mh/ph.h),wc=ph.w*sc,hc=ph.h*sc;
+        return cell(Math.floor(W/2),para(pic(addImg(ph.url),wc,hc,ph.name||'Foto'),{jc:'center',after:60}),{va:'center'});
+      });
+      rowsP.push(row(cells));
+    }
+    body+=tbl([Math.floor(W/2),Math.floor(W/2)],rowsP);
+  }
+  body+='<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1417" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr>';
+  var doc='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><w:body>'+body+'</w:body></w:document>';
+  z.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Default Extension="jpeg" ContentType="image/jpeg"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>');
+  z.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+  z.file('word/_rels/document.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'+rels.join('')+'</Relationships>');
+  z.file('word/styles.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:lang w:val="id-ID"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="60" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style></w:styles>');
+  z.file('word/document.xml',doc);
+  media.forEach(function(m){z.file('word/media/img'+m.n+'.'+m.ext,m.u8)});
+  return z.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+}
+
+/* ---------- antarmuka ---------- */
+var ST={text:'',files:[],M:null,photos:[],people:[],act:'',no:'',busy:false};
+function modal(html){
+  var m=$('waModal');if(!m){m=document.createElement('div');m.id='waModal';m.className='modal';document.body.appendChild(m);m.addEventListener('mousedown',function(e){if(e.target===m&&!ST.busy)closeModal('waModal')})}
+  m.innerHTML='<div class="modal-box wa-box">'+html+'</div>';openModal('waModal');return m;
+}
+function head(t){return '<div class="modal-head"><h2>'+esc(t)+'</h2><button class="close" type="button" onclick="closeModal(\'waModal\')">×</button></div>'}
+function step1(){
+  modal(head('Buat laporan dari pesan WhatsApp')+
+   '<div class="wa-s1"><p class="wa-hint">Tempel pesan laporan apa adanya. Bagian yang diberi nomor Romawi (I. DASAR, II. MAKSUD DAN TUJUAN, dan seterusnya) dikenali otomatis, begitu juga daftar petugas dan tanda tangan di bagian akhir.</p>'+
+   '<textarea id="wa_text" placeholder="LAPORAN HASIL …&#10;&#10;I. DASAR&#10;1. …">'+esc(ST.text)+'</textarea>'+
+   '<label class="wa-file" for="wa_files"><b id="wa_fn">'+(ST.files.length?ST.files.length+' foto dipilih':'Tambah foto dokumentasi (opsional)')+'</b><input type="file" id="wa_files" accept="image/*" multiple hidden></label>'+
+   '<div class="form-actions"><button class="btn" type="button" onclick="closeModal(\'waModal\')">Batal</button><button class="btn primary" type="button" id="wa_go">Baca laporan</button></div></div>');
+  $('wa_files').onchange=function(){ST.files=Array.from(this.files).slice(0,20);$('wa_fn').textContent=ST.files.length?ST.files.length+' foto dipilih':'Tambah foto dokumentasi (opsional)'};
+  $('wa_go').onclick=async function(){
+    var t=$('wa_text').value;if(t.trim().length<40){toastW('Tempel isi laporan terlebih dahulu.','danger');return}
+    ST.text=t;this.disabled=true;this.textContent='Membaca…';
+    try{
+      ST.M=parse(t);if(!ST.M.sections.length)toastW('Bagian bernomor Romawi tidak ditemukan. Laporan dibuat tanpa bagian; periksa hasilnya.','danger');
+      ST.photos=[];for(var i=0;i<ST.files.length;i++){try{ST.photos.push(await prepPhoto(ST.files[i]))}catch(e){}}
+      ST.M.photos=ST.photos;
+      try{ST.M.mengetahui=JSON.parse(localStorage.getItem('wa_mengetahui')||'null')}catch(e){ST.M.mengetahui=null}
+      ST.people=(ST.M.meta.petugas||[]).map(function(r){var p=matchPerson(r);return {raw:r,name:p?p.name:plainName(r),ok:!!p}});
+      var a=bestActivity(ST.M);ST.act=a||ST.M.activity;ST.actLinked=!!a;
+      var n=(db().reports||[]).length+1;ST.no='LAP/'+('00'+n).slice(-3)+'/'+(ROMAN[+(ST.M.meta.date||'2026-01-01').slice(5,7)-1])+'/'+(ST.M.meta.date||'').slice(0,4);
+      step2();
+    }catch(e){toastW('Gagal membaca laporan: '+e.message,'danger');this.disabled=false;this.textContent='Baca laporan'}
+  };
+}
+function bestActivity(M){
+  var best=null,bs=0,tt=clean(M.activity).split(' ');
+  (window.__acts||[]).forEach(function(a){
+    var at=clean(a.name).split(' '),inter=at.filter(function(x){return x.length>2&&tt.indexOf(x)>=0}).length,sc=inter/Math.max(1,at.length);
+    if(a.date&&M.meta.date&&String(a.date).slice(0,10)===M.meta.date)sc+=.5;
+    if(inter>=1&&sc>bs&&sc>=.6){bs=sc;best=a.name}
+  });
+  return best;
+}
+function step2(){
+  var M=ST.M,K=M.mengetahui||{jabatan:'',nama:'',nip:''};
+  modal(head('Periksa laporan')+
+  '<div class="wa-grid"><div class="wa-form">'+
+   '<div class="field"><label>Nomor laporan</label><input id="wa_no" value="'+esc(ST.no)+'"></div>'+
+   '<div class="field"><label>Kegiatan</label><input id="wa_act" list="wa_acts" value="'+esc(ST.act)+'"><datalist id="wa_acts">'+(window.__acts||[]).map(function(a){return '<option value="'+esc(a.name)+'">'}).join('')+'</datalist><small id="wa_actn">'+(ST.actLinked?'Terhubung ke kegiatan yang sudah ada.':'Nama kegiatan baru. Pilih dari daftar agar terhubung ke kegiatan yang ada.')+'</small></div>'+
+   '<div class="wa-row"><div class="field"><label>Tanggal kegiatan</label><input id="wa_date" type="date" value="'+esc(M.meta.date)+'"></div><div class="field"><label>Lokasi</label><input id="wa_loc" value="'+esc(M.meta.loc)+'"></div></div>'+
+   '<div class="field"><label>Petugas <small>(dipakai agar kegiatan ini muncul di SKP masing-masing)</small></label><div id="wa_ppl" class="wa-chips"></div><input id="wa_addp" list="wa_pl" placeholder="Tambah petugas dari Data Personel"><datalist id="wa_pl">'+(db().personnel||[]).map(function(p){return '<option value="'+esc(p.name)+'">'}).join('')+'</datalist></div>'+
+   '<div class="field"><label>Penandatangan</label><input id="wa_sj" placeholder="Jabatan" value="'+esc(M.sig.jabatan)+'"><div class="wa-row"><input id="wa_sn" placeholder="Nama" value="'+esc(M.sig.nama)+'"><input id="wa_sp" placeholder="NIP" value="'+esc(M.sig.nip)+'"></div><div class="wa-row"><input id="wa_st" placeholder="Tempat" value="'+esc(M.sig.tempat)+'"><input id="wa_sd" type="date" value="'+esc(M.sig.tanggal)+'"></div></div>'+
+   '<details class="field"'+(K.nama?' open':'')+'><summary>Mengetahui (opsional)</summary><input id="wa_kj" placeholder="Jabatan" value="'+esc(K.jabatan)+'"><div class="wa-row"><input id="wa_kn" placeholder="Nama" value="'+esc(K.nama)+'"><input id="wa_kp" placeholder="NIP" value="'+esc(K.nip)+'"></div></details>'+
+   '<p class="wa-hint">'+M.sections.length+' bagian dikenali'+(ST.photos.length?' · '+ST.photos.length+' foto':'')+'. <button type="button" class="wa-link" id="wa_back">Ubah teks laporan</button></p>'+
+  '</div><div class="wa-prev"><div class="wa-paper" id="wa_paper"></div></div></div>'+
+  '<div class="form-actions"><button class="btn" type="button" id="wa_dl">Unduh .docx</button><button class="btn" type="button" id="wa_pdf">Cetak / PDF</button><button class="btn primary" type="button" id="wa_save">Simpan ke Laporan Kegiatan</button></div>');
+  drawChips();refresh();
+  ['wa_sj','wa_sn','wa_sp','wa_st','wa_sd','wa_kj','wa_kn','wa_kp'].forEach(function(id){$(id).oninput=refresh});
+  $('wa_act').onchange=function(){var a=(window.__acts||[]).find(function(x){return x.name===this.value}.bind(this));ST.act=this.value;if(a){if(a.date&&!$('wa_date').value)$('wa_date').value=String(a.date).slice(0,10);if(a.loc&&!$('wa_loc').value)$('wa_loc').value=a.loc;$('wa_actn').textContent='Terhubung ke kegiatan yang sudah ada.'}else $('wa_actn').textContent='Nama kegiatan baru.'};
+  $('wa_addp').onchange=function(){var v=this.value.trim();if(!v)return;var p=(db().personnel||[]).find(function(x){return x.name===v});if(p&&!ST.people.some(function(x){return x.name===p.name}))ST.people.push({raw:v,name:p.name,ok:true});this.value='';drawChips()};
+  $('wa_back').onclick=function(){collect();step1()};
+  $('wa_dl').onclick=function(){go(false)};$('wa_save').onclick=function(){go(true)};$('wa_pdf').onclick=printPdf;
+}
+function drawChips(){
+  var box=$('wa_ppl');if(!box)return;
+  box.innerHTML=ST.people.length?ST.people.map(function(p,i){return '<span class="wa-chip'+(p.ok?'':' warn')+'" title="'+(p.ok?'Cocok dengan Data Personel':'Tidak ditemukan di Data Personel. Pilih nama yang benar atau hapus.')+'">'+esc(p.name)+'<button type="button" data-i="'+i+'" aria-label="Hapus">×</button></span>'}).join(''):'<span class="wa-hint">Belum ada petugas terbaca.</span>';
+  box.querySelectorAll('button').forEach(function(b){b.onclick=function(){ST.people.splice(+b.getAttribute('data-i'),1);drawChips()}});
+}
+function collect(){
+  var M=ST.M,g=function(id){var e=$(id);return e?e.value.trim():''};
+  if(!$('wa_no'))return M;
+  ST.no=g('wa_no');ST.act=g('wa_act');M.meta.date=g('wa_date');M.meta.loc=g('wa_loc');
+  M.sig={jabatan:g('wa_sj'),nama:g('wa_sn'),nip:g('wa_sp'),tempat:g('wa_st'),tanggal:g('wa_sd')};
+  M.mengetahui={jabatan:g('wa_kj'),nama:g('wa_kn'),nip:g('wa_kp')};
+  return M;
+}
+function refresh(){collect();var p=$('wa_paper');if(p)p.innerHTML=toHtml(ST.M)}
+function fname(){return 'Laporan_'+String(ST.act||'kegiatan').replace(/[^A-Za-z0-9]+/g,'_').slice(0,50)+'_'+(ST.M.meta.date||'')+'.docx'}
+function download(blob,name){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000)}
+function printPdf(){
+  collect();var w=window.open('','_blank');if(!w){toastW('Pop-up diblokir browser. Izinkan pop-up untuk situs ini.','danger');return}
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc(ST.M.title)+'</title><style>@page{size:A4;margin:18mm 16mm 18mm 25mm}body{margin:0}'+PAPER_CSS.replace(/\.wa-paper\{[^}]*\}/,'.wa-paper{font:12pt/1.45 "Times New Roman",Times,serif;text-align:justify;color:#000}')+'</style></head><body><div class="wa-paper">'+toHtml(ST.M)+'</div><script>window.onload=function(){setTimeout(function(){window.print()},400)}<\/script></body></html>');
+  w.document.close();
+}
+async function go(save){
+  if(ST.busy)return;collect();
+  var M=ST.M;if(save){
+    if(!ST.no){toastW('Isi nomor laporan.','danger');return}
+    if(!ST.act){toastW('Isi nama kegiatan.','danger');return}
+    if(!M.meta.date){toastW('Isi tanggal kegiatan.','danger');return}
+  }
+  ST.busy=true;var btn=$(save?'wa_save':'wa_dl'),old=btn.textContent;btn.disabled=true;btn.textContent=save?'Menyimpan…':'Menyiapkan…';
+  try{
+    var blob=await buildDocx(M),name=fname();
+    if(!save){download(blob,name);return}
+    var path='report/'+Date.now()+'_'+name.replace(/[^a-zA-Z0-9_.-]/g,'_');
+    var up=await sbClient.storage.from('documents').upload(path,blob,{upsert:false,contentType:blob.type});
+    if(up.error)throw new Error('Unggah dokumen gagal: '+up.error.message);
+    var obj={no:ST.no,activity:ST.act,date:M.meta.date,person:ST.people.map(function(p){return p.name}).join('; '),status:'Draft',result:'',finding:'',action:'',note:(M.meta.loc?'Lokasi: '+M.meta.loc:'')+(M.meta.jam?(M.meta.loc?' · ':'')+'Waktu: '+M.meta.jam:''),file_path:path,file_name:name};
+    secOf(/hasil/i,M,function(t){obj.result=t});secOf(/tindak|upaya/i,M,function(t){obj.action=t});
+    var r=await sbClient.from('reports').insert(obj).select().single();
+    if(r.error){sbClient.storage.from('documents').remove([path]);throw new Error('Gagal menyimpan: '+r.error.message)}
+    try{localStorage.setItem('wa_mengetahui',JSON.stringify(M.mengetahui||null))}catch(e){}
+    if(db().reports)db().reports.unshift(r.data);
+    if(window.__render)window.__render();
+    closeModal('waModal');toastW('Laporan tersimpan. Dokumen Word dibuat otomatis.');
+    if(window.__afterSave&&ST.files.length)await window.__afterSave('report',r.data,null,ST.files);
+    ST.text='';ST.files=[];
+  }catch(e){toastW(e.message||'Gagal membuat laporan.','danger')}
+  finally{ST.busy=false;if(btn){btn.disabled=false;btn.textContent=old}}
+}
+function secOf(re,M,fn){var s=M.sections.find(function(x){return re.test(x.title)});if(!s)return;var t=[];s.blocks.forEach(function(b){if(b.t==='p')t.push(b.text);else if(b.items)b.items.forEach(function(i,k){t.push((k+1)+'. '+i)})});var v=t.join('\n').slice(0,1500);if(v)fn(v)}
+
+window.__waOpen=step1;
+window.__wa={parse:parse,buildDocx:buildDocx,toHtml:toHtml,matchPerson:matchPerson,state:ST};
+var st=document.createElement('style');st.textContent=PAPER_CSS;document.head.appendChild(st);
 })();
 
 </script>
