@@ -702,6 +702,13 @@ position:relative;min-height:100vh;display:grid;grid-template-columns:minmax(0,1
 .pp .hint,.pp-hint{display:block;margin-top:6px;font-size:12px;color:var(--muted)}
 .pp-note{padding:12px 14px;border-radius:12px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);color:var(--text);font-size:12.5px;line-height:1.5}
 
+.pp-cell{display:inline;line-height:1.5}
+.pp-more{all:unset;cursor:pointer;display:inline-block;padding:2px 9px;border-radius:999px;background:rgba(139,92,246,.16);color:#a78bfa;font-size:12px;font-weight:600;white-space:nowrap;vertical-align:baseline}
+.pp-more:hover{background:rgba(139,92,246,.3);color:var(--text)}
+td:has(>.pp-cell){max-width:300px}
+td:has(>.pp-cell){white-space:normal!important;min-width:230px;max-width:300px}
+.pp-cell{display:block;white-space:normal;word-break:normal;overflow-wrap:anywhere}
+
 </style>
 <style>
 /* ===== persetujuan akun ===== */
@@ -1628,7 +1635,7 @@ restoreSession();
     const vt2=document.getElementById('violationTable');if(vt2)vt2.innerHTML=db.violations.map((v,i)=>`<tr><td>${date(v.date)}</td><td>${esc(v.type)}</td><td>${esc(v.location)}</td><td>${esc(v.action)}</td><td>${badge(v.status)}</td><td>${actions('violation',i)}</td></tr>`).join('')||empty(6);
     const ft=document.getElementById('followupTable');if(ft)ft.innerHTML=db.followups.map((v,i)=>`<tr><td>${esc(v.finding)}</td><td>${esc(v.pic)}</td><td>${esc(v.agency)}</td><td>${date(v.deadline)}</td><td>${badge(v.status)}</td><td>${esc(v.note)}</td><td>${actions('followup',i)}</td></tr>`).join('')||empty(7);
     const st=document.getElementById('sptTable');if(st)st.innerHTML=db.spt.map((v,i)=>`<tr><td>${esc(v.no)}</td><td>${esc(v.activity)}</td><td>${date(v.date)}</td><td>${esc(v.location)}</td><td>${esc(v.pic)}</td><td>${badge(v.status)}</td><td>${docCell(v)}</td><td>${actions('spt',i,`<button class="btn" onclick="openGenerate('spt',${i})">Buat Dokumen</button>`)}</td></tr>`).join('')||empty(8);
-    const rt=document.getElementById('reportTable');if(rt)rt.innerHTML=db.reports.map((v,i)=>`<tr><td>${esc(v.no)}</td><td>${esc(v.activity)}</td><td>${date(v.date)}</td><td>${esc(window.ppFmt?window.ppFmt(v.person):v.person)}</td><td>${badge(v.status)}</td><td>${docCell(v)}</td><td>${actions('report',i,`<button class="btn" onclick="openGenerate('report',${i})">Buat Dokumen</button>`)}</td></tr>`).join('')||empty(7);
+    const rt=document.getElementById('reportTable');if(rt)rt.innerHTML=db.reports.map((v,i)=>`<tr><td>${esc(v.no)}</td><td>${esc(v.activity)}</td><td>${date(v.date)}</td><td>${window.ppCell?window.ppCell(v.person):esc(v.person)}</td><td>${badge(v.status)}</td><td>${docCell(v)}</td><td>${actions('report',i,`<button class="btn" onclick="openGenerate('report',${i})">Buat Dokumen</button>`)}</td></tr>`).join('')||empty(7);
     renderArchives();
     renderPhotos();
   }
@@ -2383,6 +2390,17 @@ render();
  function parse(v){return String(v||'').split(';').map(function(x){return x.trim()}).filter(Boolean)}
  window.ppParse=parse;
  window.ppFmt=function(v){return parse(v).join(', ')||''};
+ /* tampilan ringkas di tabel: 2 nama pertama + "+N lainnya" yang bisa dibuka */
+ window.ppCell=function(v){
+  var a=parse(v);if(a.length<=2)return esc(a.join(' · '));
+  var s=a.slice(0,2).join(' · ');
+  return '<span class="pp-cell" data-short="'+esc(s)+'" data-full="'+esc(a.join(' · '))+'" data-n="'+(a.length-2)+'"><span class="pp-nm">'+esc(s)+'</span> <button type="button" class="pp-more">+'+(a.length-2)+' lainnya</button></span>';
+ };
+ document.addEventListener('click',function(e){
+  var b=e.target.closest&&e.target.closest('.pp-more');if(!b)return;
+  var c=b.closest('.pp-cell'),nm=c.querySelector('.pp-nm'),open=c.getAttribute('data-open')==='1';
+  c.setAttribute('data-open',open?'0':'1');nm.textContent=c.getAttribute(open?'data-short':'data-full');b.textContent=open?'+'+c.getAttribute('data-n')+' lainnya':'Ringkas';
+ });
  window.__clean=function(o,t){if(t==='spt'&&window.__noTeam){o=Object.assign({},o);delete o.team}return o};
  window.ppField=function(key,label,multi,req,val){
   if(key==='team'&&window.__noTeam)return '<div class="field full"><label>'+esc(label)+'</label><div class="pp-note">Daftar petugas untuk SPT belum aktif. Jalankan file <b>supabase_tambah_petugas.sql</b> di Supabase SQL Editor, lalu muat ulang aplikasi. <input type="hidden" id="crud_team" value=""></div></div>';
