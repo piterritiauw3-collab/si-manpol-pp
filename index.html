@@ -834,6 +834,10 @@ position:relative;min-height:100vh;display:grid;grid-template-columns:minmax(0,1
 .skp-card{margin-bottom:10px}
 @media(max-width:700px){.skp-rh{flex-wrap:wrap;gap:10px}.skp-rh .skp-t{flex:1 1 60%}.skp-rb{padding:2px 14px 14px}.skp-dot{order:5}}
 
+.skp-scan{display:flex;align-items:center;gap:9px;margin:0 0 10px;font-size:13px;color:var(--muted)}
+.skp-spin{width:13px;height:13px;border-radius:50%;border:2px solid rgba(139,92,246,.3);border-top-color:#a78bfa;animation:skpSp .8s linear infinite}
+@keyframes skpSp{to{transform:rotate(360deg)}}
+
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
 <style>
@@ -2552,6 +2556,73 @@ async function load(){
 function myRhk(){return S.rhk.filter(function(r){return r.year===S.year&&r.quarter===S.q})}
 function rhkItems(id){return S.items.filter(function(i){return i.rhk_id===id})}
 
+
+/* ---------- membaca nama di dalam berkas SPT/Laporan (.docx & .pdf) ---------- */
+var DOCHIT={};try{DOCHIT=JSON.parse(localStorage.getItem('skp_doc_v1')||'{}')||{}}catch(e){DOCHIT={}}
+function saveHits(){try{var o={};Object.keys(DOCHIT).forEach(function(k){if(DOCHIT[k]===0||DOCHIT[k]===1)o[k]=DOCHIT[k]});localStorage.setItem('skp_doc_v1',JSON.stringify(o))}catch(e){}}
+function clean(s){return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
+function nameKeys(){
+  var nm=String(S.profile&&S.profile.personnel_name||''),names=[],c=clean(nm),b=clean(nm.split(',')[0]).replace(/^((drs|dra|dr|ir|h|hj|haji)\s)+/,'');
+  [c,b].forEach(function(x){if(x&&x.length>=5&&names.indexOf(x)<0)names.push(x)});
+  var p=(db().personnel||[]).find(function(x){return norm(x.name)===norm(nm)}),nip=p&&p.nip?String(p.nip).replace(/\D/g,''):'';
+  return {names:names,nip:nip.length>=15?nip:'',id:names.join('/')+'|'+nip};
+}
+function hitKey(path){return path+'|'+nameKeys().id}
+function textHas(txt,k){
+  var c=' '+clean(txt)+' ';
+  if(k.names.some(function(n){return c.indexOf(' '+n+' ')>=0}))return true;
+  return !!(k.nip&&String(txt).replace(/\D/g,'').indexOf(k.nip)>=0);
+}
+function fileExt(x){var m=String(x.file_name||x.file_path||'').match(/\.([a-zA-Z0-9]{2,5})$/);return m?m[1].toLowerCase():''}
+function fileHit(x){return !!(x&&x.file_path&&DOCHIT[hitKey(x.file_path)]===1)}
+function loadPdfJs(){
+  if(window.pdfjsLib)return Promise.resolve(window.pdfjsLib);
+  if(window.__pdfLoad)return window.__pdfLoad;
+  window.__pdfLoad=new Promise(function(res,rej){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';s.onload=function(){try{window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'}catch(e){}res(window.pdfjsLib)};s.onerror=function(){window.__pdfLoad=null;rej(new Error('pdf.js tidak termuat'))};document.head.appendChild(s)});
+  return window.__pdfLoad;
+}
+async function extractText(blob,ext){
+  if(ext==='docx'){
+    if(!window.JSZip)return null;
+    var z=await window.JSZip.loadAsync(blob),xml=z.file('word/document.xml');if(!xml)return null;
+    var t=await xml.async('string');
+    return t.replace(/<\/w:p>|<w:tab\/>|<w:br\/>/g,' ').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'");
+  }
+  if(ext==='pdf'){
+    var lib=await loadPdfJs(),pdf=await lib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise,out=[];
+    for(var p=1;p<=Math.min(pdf.numPages,30);p++){var pg=await pdf.getPage(p),tc=await pg.getTextContent();out.push(tc.items.map(function(i){return i.str}).join(' '))}
+    return out.join(' ');
+  }
+  return null;
+}
+function scanCandidates(){
+  var d=db(),k=nameKeys(),N=norm(S.profile&&S.profile.personnel_name),out=[];
+  if(!N)return out;
+  (d.spt||[]).forEach(function(x){if(x.file_path&&inQ(x.date)&&!(norm(x.pic)===N||people(x.team).map(norm).indexOf(N)>=0))out.push(x)});
+  (d.reports||[]).forEach(function(x){if(x.file_path&&inQ(x.date)&&people(x.person).map(norm).indexOf(N)<0)out.push(x)});
+  return out.filter(function(x){return ['docx','pdf'].indexOf(fileExt(x))>=0});
+}
+S.scan={busy:false,total:0,done:0};
+async function scanDocs(){
+  if(S.scan.busy||!S.profile)return;
+  var todo=scanCandidates().filter(function(x){return DOCHIT[hitKey(x.file_path)]===undefined}).slice(0,60);
+  if(!todo.length)return;
+  S.scan={busy:true,total:todo.length,done:0};render();
+  var changed=false;
+  for(var i=0;i<todo.length;i++){
+    var x=todo[i],key=hitKey(x.file_path);
+    try{
+      var url=await window.__signedUrl(x.file_path),blob=await fetchBlob(url),txt=await extractText(blob,fileExt(x));
+      if(txt==null||clean(txt).length<15)DOCHIT[key]=-2;            /* tidak bisa dibaca (pindaian/format lama) */
+      else{DOCHIT[key]=textHas(txt,nameKeys())?1:0;if(DOCHIT[key]===1)changed=true}
+    }catch(e){DOCHIT[key]=-1}
+    S.scan.done=i+1;
+    if(changed&&i%3===2){render()}
+  }
+  saveHits();S.scan.busy=false;render();
+}
+function unreadable(){return scanCandidates().filter(function(x){var v=DOCHIT[hitKey(x.file_path)];return v===-2||v===-1}).length}
+
 /* kumpulkan kegiatan milik pegawai pada triwulan terpilih */
 function collect(){
   var N=norm(S.profile&&S.profile.personnel_name);if(!N)return [];
@@ -2566,10 +2637,10 @@ function collect(){
     if(inQ(dt)){var r=row(x.activity,dt);if(a)r.loc=a.loc||r.loc;r.role=x.role||r.role}
   });
   (d.spt||[]).forEach(function(x){
-    if((norm(x.pic)===N||people(x.team).map(norm).indexOf(N)>=0)&&inQ(x.date)){var r=row(x.activity,x.date);r.spt.push(x);r.loc=r.loc||x.location||''}
+    var vf=!(norm(x.pic)===N||people(x.team).map(norm).indexOf(N)>=0);if((!vf||fileHit(x))&&inQ(x.date)){var r=row(x.activity,x.date);r.spt.push(x);r.loc=r.loc||x.location||'';if(vf)r.via=true}
   });
   (d.reports||[]).forEach(function(x){
-    if(people(x.person).map(norm).indexOf(N)>=0&&inQ(x.date)){var r=row(x.activity,x.date);r.report.push(x);r.loc=r.loc||x.location||''}
+    var vf=people(x.person).map(norm).indexOf(N)<0;if((!vf||fileHit(x))&&inQ(x.date)){var r=row(x.activity,x.date);r.report.push(x);r.loc=r.loc||x.location||'';if(vf)r.via=true}
   });
   var rows=Object.keys(map).map(function(k){return map[k]});
   (d.photos||[]).forEach(function(ph){
@@ -2626,16 +2697,19 @@ function render(){
   /* belum dipetakan */
   var free=rows.filter(function(r){return !mapped(r)});
   h+='<div class="skp-sec"><h2>Kegiatan belum dipetakan</h2><span class="sp"></span><button class="skp-mini" data-a="addManual" type="button">Tambah bukti sendiri</button></div>';
+  if(S.scan.busy)h+='<p class="skp-scan"><i class="skp-spin"></i>Mencari nama Anda di dalam berkas SPT dan laporan… '+S.scan.done+' dari '+S.scan.total+'</p>';
+  else{var ur=unreadable();if(ur)h+='<p class="skp-scan">'+ur+' berkas tidak bisa dibaca (PDF hasil pindai atau format .doc lama). Tambahkan lewat “Tambah bukti sendiri” bila perlu.</p>'}
   if(!rows.length)h+='<div class="skp-empty"><b>Belum ada kegiatan di '+esc(qLabel())+'</b>Kegiatan muncul bila nama Anda tercatat sebagai petugas di Penugasan, SPT, atau Laporan.</div>';
   else if(!free.length)h+='<div class="skp-empty"><b>Semua kegiatan sudah dipetakan</b></div>';
   else{
     var opt='<option value="">Pilih RHK…</option>'+rh.map(function(r,i){return '<option value="'+esc(r.id)+'">'+(i+1)+'. '+esc(r.name)+'</option>'}).join('');
     h+='<div class="skp-card" style="padding:8px 8px 4px"><table class="skp-tbl"><thead><tr><th style="width:34px"><input type="checkbox" id="skpAll"></th><th>Tanggal</th><th>Kegiatan</th><th>Bukti</th><th>RHK</th></tr></thead><tbody>'+
-      free.map(function(r){return '<tr><td><input type="checkbox" class="skp-ck" data-k="'+esc(r.key)+'"'+(S.picked[r.key]?' checked':'')+'></td><td style="white-space:nowrap">'+esc(fmt(r.date))+'</td><td><b>'+esc(r.title)+'</b>'+(r.loc?'<div style="font-size:12px;color:var(--muted)">'+esc(r.loc)+'</div>':'')+'</td><td>'+tags(r)+'</td><td><select data-a="assign" data-k="'+esc(r.key)+'"'+(rh.length?'':' disabled')+'>'+opt+'</select></td></tr>'}).join('')+
+      free.map(function(r){return '<tr><td><input type="checkbox" class="skp-ck" data-k="'+esc(r.key)+'"'+(S.picked[r.key]?' checked':'')+'></td><td style="white-space:nowrap">'+esc(fmt(r.date))+'</td><td><b>'+esc(r.title)+'</b>'+(r.loc?'<div style="font-size:12px;color:var(--muted)">'+esc(r.loc)+'</div>':'')+(r.via?'<div style="font-size:12px;color:#67e8f9">Nama Anda ditemukan di isi berkas</div>':'')+'</td><td>'+tags(r)+'</td><td><select data-a="assign" data-k="'+esc(r.key)+'"'+(rh.length?'':' disabled')+'>'+opt+'</select></td></tr>'}).join('')+
       '</tbody></table></div>'+
       (rh.length?'<div class="skp-link" style="margin-top:4px"><select class="skp-year" id="skpBulk" style="flex:1;min-width:220px;height:42px">'+opt+'</select><button class="skp-mini primary" data-a="bulk" type="button">Masukkan yang dipilih</button></div>':'<p class="skp-none">Tambahkan RHK dulu agar kegiatan bisa dipetakan.</p>');
   }
   root.innerHTML=h;
+  setTimeout(scanDocs,0);
   requestAnimationFrame(function(){requestAnimationFrame(function(){root.querySelectorAll('.skp-bar-fg').forEach(function(b){b.style.width=b.getAttribute('data-w')+'%'})})});
 }
 
